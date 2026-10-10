@@ -54,7 +54,7 @@ describe('GitHub calendar normalization', () => {
     expect(leapSaturday.width).toBe(54);
     expect(leapSaturday.contributions).toHaveLength(378);
     const replay = simulate(createArena(leapSaturday.contributions, leapSaturday.width), { mode: 'preview' });
-    expect(renderSvg(replay)).toContain('Make your contributions a blast.');
+    expect(renderSvg(replay)).toContain('<title id="title">Contribution calendar</title>');
   });
 
   it('queries only elapsed dates in the current year and pads the rest of that year', () => {

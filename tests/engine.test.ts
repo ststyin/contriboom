@@ -206,10 +206,36 @@ describe('input validation', () => {
 
 describe('SVG output', () => {
   const replay = simulate(createArena(mockContributions()));
+  it('places every robot keyframe over a calendar cell without an outer route', () => {
+    const svg = renderSvg(replay);
+    const floor = svg.match(/<g id="floor">\s*<rect x="([\d.]+)" y="([\d.]+)"/)!
+    const left = Number(floor[1]) + 10;
+    const top = Number(floor[2]) + 10;
+    const player = svg.slice(svg.indexOf('<g id="player"'));
+    const positions = player.match(/<animateTransform[^>]+values="([^"]+)"/)![1]!.split(';');
+    for (const value of positions) {
+      const [x, y] = value.split(' ').map(Number);
+      expect(x).toBeGreaterThanOrEqual(left);
+      expect(x).toBeLessThanOrEqual(left + (replay.arena.width - 1) * 22);
+      expect(y).toBeGreaterThanOrEqual(top);
+      expect(y).toBeLessThanOrEqual(top + (replay.arena.height - 1) * 22);
+    }
+  });
+  it('preserves the original robot size', () => {
+    expect(renderSvg(replay).match(/<use href="#robot"[^>]*\/>/)?.[0]).toBe('<use href="#robot"/>');
+  });
+  it('renders the original calendar when no empty spawn exists', () => {
+    const full = simulate(createArena(mockContributions(42, 'full')), { mode: 'preview' });
+    const svg = renderSvg(full);
+    expect(svg.includes('id="player"')).toBe(false);
+    expect(svg.includes('<animate')).toBe(false);
+    expect([...svg.matchAll(/data-cell=/g)]).toHaveLength(371);
+  });
   it('contains only self-contained artwork and escapes input labels', () => {
     const svg = renderSvg(replay, { label: '<script>"&\'' });
     expect(svg).not.toMatch(/<script|<foreignObject|onload=|href="https?:|url\(https?:|@import/i);
     expect(svg).toContain('&lt;script&gt;&quot;&amp;&apos;');
+    expect(svg).not.toMatch(/<text\b|Contriboom|Make your contributions|stroke-dasharray/);
     for (const reference of svg.matchAll(/href="([^"]+)"/g)) expect(reference[1]).toMatch(/^#/);
   });
   it('synchronizes every animation and has well-formed keyframe arrays', () => {
@@ -227,8 +253,9 @@ describe('SVG output', () => {
     }
   });
   it('renders a static alternative and distinct themes from the same replay', () => {
-    expect(renderSvg(replay, { animated: false })).not.toMatch(/<animate/);
-    expect(renderSvg(replay, { theme: 'dark' })).toContain('#0d1117');
-    expect(renderSvg(replay, { theme: 'light' })).toContain('#fbfaf5');
+    const svg = renderSvg(replay, { animated: false });
+    expect(svg).not.toMatch(/<animate|<text\b|<defs>|id="player"/);
+    expect(renderSvg(replay, { theme: 'dark' })).toContain('#202b36');
+    expect(renderSvg(replay, { theme: 'light' })).toContain('#e4e9dd');
   });
 });

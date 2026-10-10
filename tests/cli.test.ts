@@ -30,7 +30,8 @@ describe('generation CLI', () => {
       'contributions.json', 'game-dark.svg', 'game-light.svg', 'game-static.svg', 'game.svg', 'replay.json',
     ]);
     const svg = await readFile(path.join(output, 'game.svg'), 'utf8');
-    expect(svg).toContain('#fbfaf5');
+    expect(svg).toContain('#e4e9dd');
+    expect(svg).not.toMatch(/<text\b|Contriboom|Make your contributions/);
     expect(svg).not.toMatch(/M1|FULL CLEAR|DEMO DATA|SHORT PREVIEW|blocks cleared/);
     expect(await readFile(path.join(output, 'game-light.svg'), 'utf8')).toBe(svg);
   });
