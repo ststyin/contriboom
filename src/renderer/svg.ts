@@ -8,7 +8,7 @@ import type { Theme } from './themes.ts';
 export interface RenderOptions { theme?: Theme; label?: string; animated?: boolean }
 
 export function renderSvg(replay: Replay, options: RenderOptions = {}): string {
-  const theme = THEMES[options.theme ?? 'dark'];
+  const theme = THEMES[options.theme ?? 'light'];
   const animated = options.animated !== false;
   const { arena, duration } = replay;
   const stride = 22;
