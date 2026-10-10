@@ -1,0 +1,164 @@
+import { execFile } from 'node:child_process';
+import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import { promisify } from 'node:util';
+import { fileURLToPath } from 'node:url';
+import { afterEach, describe, expect, it } from 'vitest';
+
+const execute = promisify(execFile);
+const action = fileURLToPath(new URL('../scripts/action.ts', import.meta.url));
+const directories: string[] = [];
+
+async function workspace() {
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'contriboom-action-'));
+  directories.push(directory);
+  const outputFile = path.join(directory, 'github-output');
+  const preload = path.join(directory, 'github-mock.mjs');
+  await writeFile(outputFile, '');
+  // Run the real Action entry point and CLI with only the HTTP boundary mocked.
+  await writeFile(preload, `
+    const weeks = [];
+    let totalContributions = 0;
+    for (let time = Date.UTC(2025, 0, 1), index = 0; time <= Date.UTC(2025, 11, 31); time += 86400000, index++) {
+      const date = new Date(time).toISOString().slice(0, 10);
+      const weekday = new Date(time).getUTCDay();
+      if (weekday === 0 || weeks.length === 0) weeks.push({ firstDay: date, contributionDays: [] });
+      const contributionCount = index % 14 === 0 ? 3 : 0;
+      totalContributions += contributionCount;
+      weeks.at(-1).contributionDays.push({ date, weekday, contributionCount,
+        contributionLevel: contributionCount ? 'FIRST_QUARTILE' : 'NONE' });
+    }
+    globalThis.fetch = async (url, request) => {
+      if (url !== 'https://api.github.com/graphql') throw new Error('Unexpected URL');
+      if (request.headers.Authorization !== 'Bearer action-test-token') throw new Error('Incorrect token');
+      const { variables } = JSON.parse(request.body);
+      if (variables.login !== 'octocat' || variables.from !== '2025-01-01T00:00:00.000Z') throw new Error('Incorrect query');
+      if (process.env.CONTRIBOOM_TEST_FAIL === '1') return Response.json({}, { status: 401 });
+      return Response.json({ data: { user: { login: 'octocat', contributionsCollection: {
+        contributionCalendar: { weeks, totalContributions }
+      } } } });
+    };
+  `);
+  const env = {
+    ...process.env,
+    GITHUB_TOKEN: '', GH_TOKEN: '', CONTRIBOOM_USERNAME: '',
+    GITHUB_WORKSPACE: directory, GITHUB_OUTPUT: outputFile,
+    CONTRIBOOM_INPUT_USERNAME: 'octocat', CONTRIBOOM_INPUT_TOKEN: 'action-test-token',
+    CONTRIBOOM_INPUT_YEAR: '2025', CONTRIBOOM_INPUT_OUTPUT: 'images with spaces/contriboom',
+    CONTRIBOOM_INPUT_MODE: 'preview', CONTRIBOOM_INPUT_SEED: '71',
+    CONTRIBOOM_INPUT_RANGE: '2', CONTRIBOOM_INPUT_MAX_BOMBS: '2', CONTRIBOOM_INPUT_DURATION: '12',
+    NODE_OPTIONS: `--import=${preload}`,
+  };
+  return { directory, outputFile, env, run: (overrides: Record<string, string> = {}) =>
+    execute(process.execPath, [action], { cwd: directory, env: { ...env, ...overrides } }) };
+}
+
+afterEach(async () => {
+  await Promise.all(directories.splice(0).map(directory => rm(directory, { recursive: true, force: true })));
+});
+
+describe('GitHub Action entry point', () => {
+  it('generates in the caller workspace, forwards settings and emits usable absolute paths', async () => {
+    const context = await workspace();
+    const { stdout } = await context.run();
+    const outputs = Object.fromEntries((await readFile(context.outputFile, 'utf8')).trim().split('\n').map(line => {
+      const separator = line.indexOf('=');
+      return [line.slice(0, separator), line.slice(separator + 1)];
+    }));
+    expect(outputs['output-dir']).toBe(path.join(context.directory, 'images with spaces/contriboom'));
+    for (const name of ['svg', 'svg-dark', 'svg-light', 'svg-static']) {
+      expect(path.isAbsolute(outputs[name]!)).toBe(true);
+      expect(await readFile(outputs[name]!, 'utf8')).toContain('<svg');
+    }
+    expect(await readFile(outputs['svg-static']!, 'utf8')).not.toContain('<animate');
+    const replay = JSON.parse(await readFile(path.join(outputs['output-dir']!, 'replay.json'), 'utf8'));
+    expect(replay.config).toMatchObject({ mode: 'preview', seed: 71, explosionRange: 2, maxBombs: 2, maxDuration: 12 });
+    expect(replay.duration).toBeLessThanOrEqual(12);
+    expect(replay.stats.bombs).toBeLessThanOrEqual(2);
+    expect(stdout).not.toContain(context.env.CONTRIBOOM_INPUT_TOKEN);
+    expect(await readdir(context.directory)).not.toContain('.cache');
+  });
+
+  it('defaults to a complete clear and the artifacts directory', async () => {
+    const context = await workspace();
+    await context.run({ CONTRIBOOM_INPUT_OUTPUT: '', CONTRIBOOM_INPUT_MODE: '', CONTRIBOOM_INPUT_SEED: '' });
+    const replay = JSON.parse(await readFile(path.join(context.directory, 'artifacts/replay.json'), 'utf8'));
+    expect(replay.stats.remaining).toBe(0);
+    expect(replay.stats.destroyed).toBe(replay.stats.totalBoxes);
+    expect(replay.config).toMatchObject({ mode: 'clear', seed: 42 });
+  });
+
+  it('fails without output paths when required credentials or generation fail', async () => {
+    const context = await workspace();
+    const failures: Record<string, string>[] = [
+      { CONTRIBOOM_INPUT_USERNAME: '' }, { CONTRIBOOM_INPUT_TOKEN: '' }, { CONTRIBOOM_TEST_FAIL: '1' },
+    ];
+    for (const overrides of failures) {
+      await expect(context.run(overrides)).rejects.toMatchObject({ code: 1 });
+      expect(await readFile(context.outputFile, 'utf8')).toBe('');
+    }
+    expect(await readdir(context.directory)).not.toContain('images with spaces');
+  });
+
+  it('rejects workspace escapes and newlines in output paths before generating', async () => {
+    const context = await workspace();
+    for (const output of ['..', '../outside', context.directory, 'images\nsvg=injected', 'images\rsvg=injected']) {
+      await expect(context.run({ CONTRIBOOM_INPUT_OUTPUT: output })).rejects.toMatchObject({
+        stderr: expect.stringContaining('output-dir must be a directory inside the workspace'),
+      });
+    }
+    expect(await readFile(context.outputFile, 'utf8')).toBe('');
+  });
+
+  it('passes untrusted inputs as arguments instead of executing shell commands', async () => {
+    const context = await workspace();
+    await expect(context.run({ CONTRIBOOM_INPUT_USERNAME: 'octocat; touch injected' })).rejects.toMatchObject({
+      stderr: expect.stringContaining('Invalid GitHub username'),
+    });
+    expect(await readdir(context.directory)).not.toContain('injected');
+    expect(await readFile(context.outputFile, 'utf8')).toBe('');
+  });
+});
+
+describe('profile publication example', () => {
+  it('commits only SVGs, preserves the README and skips a second unchanged update', async () => {
+    const context = await workspace();
+    await context.run();
+    const remote = path.join(context.directory, 'remote.git');
+    const repository = path.join(context.directory, 'profile');
+    await execute('git', ['init', '--bare', remote]);
+    await execute('git', ['clone', remote, repository]);
+    const git = (args: string[]) => execute('git', args, { cwd: repository });
+    await git(['config', 'user.name', 'Profile test']);
+    await git(['config', 'user.email', 'profile-test@example.com']);
+    await writeFile(path.join(repository, 'README.md'), 'My existing profile\n');
+    await git(['add', 'README.md']);
+    await git(['commit', '-m', 'Initial profile']);
+    await git(['push', '-u', 'origin', 'HEAD']);
+    const directory = path.join(repository, 'images/contriboom');
+    await mkdir(directory, { recursive: true });
+    for (const file of await readdir(path.join(context.directory, 'images with spaces/contriboom'))) {
+      await writeFile(path.join(directory, file), await readFile(path.join(context.directory, 'images with spaces/contriboom', file)));
+    }
+    const template = await readFile(new URL('../examples/profile.yml', import.meta.url), 'utf8');
+    const script = template.slice(template.indexOf('        run: |\n') + '        run: |\n'.length)
+      .split('\n').map(line => line.slice(10)).join('\n');
+    const publish = () => execute('bash', ['-e', '-o', 'pipefail', '-c', script], {
+      cwd: repository, env: { ...process.env,
+        SVG: path.join(directory, 'game.svg'), SVG_DARK: path.join(directory, 'game-dark.svg'),
+        SVG_LIGHT: path.join(directory, 'game-light.svg'), SVG_STATIC: path.join(directory, 'game-static.svg'),
+      },
+    });
+    await publish();
+    const head = (await git(['rev-parse', 'HEAD'])).stdout;
+    expect((await git(['show', '--pretty=format:', '--name-only', 'HEAD'])).stdout.trim().split('\n')).toEqual([
+      'images/contriboom/game-dark.svg', 'images/contriboom/game-light.svg',
+      'images/contriboom/game-static.svg', 'images/contriboom/game.svg',
+    ]);
+    expect(await readFile(path.join(repository, 'README.md'), 'utf8')).toBe('My existing profile\n');
+    expect((await publish()).stdout).toContain('Contribution images are unchanged.');
+    expect((await git(['rev-parse', 'HEAD'])).stdout).toBe(head);
+    expect((await execute('git', ['rev-parse', 'HEAD'], { cwd: remote })).stdout).toBe(head);
+  });
+});

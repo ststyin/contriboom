@@ -1,0 +1,53 @@
+# Copy this file to .github/workflows/contriboom.yml in your profile repository.
+# ststyin/contriboom@main becomes available after the Action is pushed to main.
+name: Update contribution animation
+
+on:
+  schedule:
+    # Daily at 00:23 UTC (08:23 Asia/Shanghai).
+    - cron: '23 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: contriboom-profile
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out profile repository
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Generate contribution arena
+        id: contriboom
+        uses: ststyin/contriboom@main
+        with:
+          username: ${{ github.repository_owner }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          output-dir: images/contriboom
+          mode: clear
+
+      - name: Commit updated images
+        shell: bash
+        env:
+          SVG: ${{ steps.contriboom.outputs.svg }}
+          SVG_DARK: ${{ steps.contriboom.outputs.svg-dark }}
+          SVG_LIGHT: ${{ steps.contriboom.outputs.svg-light }}
+          SVG_STATIC: ${{ steps.contriboom.outputs.svg-static }}
+        run: |
+          git add -f -- "$SVG" "$SVG_DARK" "$SVG_LIGHT" "$SVG_STATIC"
+          if git diff --cached --quiet; then
+            echo "Contribution images are unchanged."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Update contribution animation"
+          git push

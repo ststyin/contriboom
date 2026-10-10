@@ -1,0 +1,76 @@
+name: Contriboom
+description: Turn a GitHub contribution calendar into an animated SVG arena.
+author: ststyin
+branding:
+  icon: zap
+  color: orange
+
+inputs:
+  username:
+    description: GitHub account whose contributions to animate.
+    required: true
+    default: ${{ github.repository_owner }}
+  github-token:
+    description: Token used to read contributions. Defaults to the workflow token.
+    default: ${{ github.token }}
+  year:
+    description: Calendar year. Leave empty for the past year.
+  output-dir:
+    description: Destination directory inside the caller's workspace.
+    default: artifacts
+  mode:
+    description: clear requires a safe full clear; preview limits bombs and duration.
+    default: clear
+  seed:
+    description: Seed for reproducible simulations.
+    default: '42'
+  range:
+    description: Explosion range in cells (1–10).
+    default: '3'
+  max-bombs:
+    description: Maximum bombs in preview mode (0–20).
+    default: '5'
+  duration:
+    description: Maximum loop duration in preview mode, in seconds (8–60).
+    default: '22'
+
+outputs:
+  output-dir:
+    description: Absolute path to the generated directory.
+    value: ${{ steps.generate.outputs.output-dir }}
+  svg:
+    description: Absolute path to the default light animation.
+    value: ${{ steps.generate.outputs.svg }}
+  svg-dark:
+    description: Absolute path to the dark animation.
+    value: ${{ steps.generate.outputs.svg-dark }}
+  svg-light:
+    description: Absolute path to the light animation.
+    value: ${{ steps.generate.outputs.svg-light }}
+  svg-static:
+    description: Absolute path to the static light image.
+    value: ${{ steps.generate.outputs.svg-static }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Node.js
+      uses: actions/setup-node@v7
+      with:
+        node-version: '24'
+        package-manager-cache: false
+    - name: Generate contribution arena
+      id: generate
+      shell: bash
+      env:
+        CONTRIBOOM_ACTION_PATH: ${{ github.action_path }}
+        CONTRIBOOM_INPUT_USERNAME: ${{ inputs.username }}
+        CONTRIBOOM_INPUT_TOKEN: ${{ inputs.github-token }}
+        CONTRIBOOM_INPUT_YEAR: ${{ inputs.year }}
+        CONTRIBOOM_INPUT_OUTPUT: ${{ inputs.output-dir }}
+        CONTRIBOOM_INPUT_MODE: ${{ inputs.mode }}
+        CONTRIBOOM_INPUT_SEED: ${{ inputs.seed }}
+        CONTRIBOOM_INPUT_RANGE: ${{ inputs.range }}
+        CONTRIBOOM_INPUT_MAX_BOMBS: ${{ inputs.max-bombs }}
+        CONTRIBOOM_INPUT_DURATION: ${{ inputs.duration }}
+      run: node "$CONTRIBOOM_ACTION_PATH/scripts/action.ts"
