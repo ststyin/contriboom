@@ -7,11 +7,18 @@ import { mockContributions } from './fixtures/contributions.ts';
 import type { Fixture } from './fixtures/contributions.ts';
 import type { Contribution } from './engine/types.ts';
 import { renderSvg } from './renderer/svg.ts';
+import { getGitHubContributions } from './github/client.ts';
 
 async function main(): Promise<void> {
   const { values } = parseArgs({ options: {
     seed: { type: 'string', default: '42' },
-    fixture: { type: 'string', default: 'demo' },
+    fixture: { type: 'string' },
+    username: { type: 'string' },
+    year: { type: 'string' },
+    'cache-dir': { type: 'string', default: '.cache/contriboom' },
+    'cache-ttl': { type: 'string', default: '3600' },
+    'no-cache': { type: 'boolean', default: false },
+    refresh: { type: 'boolean', default: false },
     input: { type: 'string' },
     output: { type: 'string', default: 'artifacts' },
     mode: { type: 'string', default: 'clear' },
@@ -22,22 +29,45 @@ async function main(): Promise<void> {
   } });
   if (values.help) {
     console.log('Contriboom — Make your contributions a blast.\n\n' +
+      'npm run generate -- --username <login> [--year 2025] [--refresh]\n' +
+      '                    [--cache-dir .cache/contriboom] [--cache-ttl 3600] [--no-cache]\n' +
       'npm run generate -- [--seed 42] [--fixture demo|empty|full|sparse]\n' +
       '                    [--input contributions.json] [--output artifacts]\n' +
       '                    [--mode clear|preview] [--range 3]\n' +
       '                    [--max-bombs 5] [--duration 22] (preview only)\n\n' +
-      'JSON input: a column-major array of 53 × 7 { date, count, level } days.\n' +
-      'No GitHub token or network connection is needed.');
+      'GitHub: set GITHUB_TOKEN or GH_TOKEN. Default period is the past year.\n' +
+      'CONTRIBOOM_USERNAME supplies a default account; --input or --fixture overrides it.\n' +
+      'JSON input: complete chronological weeks of { date, count, level } days (up to 54 weeks).\n' +
+      'Local JSON and fixtures work offline without a token.');
     return;
   }
-  if (!['demo', 'empty', 'full', 'sparse'].includes(values.fixture!)) throw new Error('Unknown fixture.');
+  const fixture = values.fixture ?? 'demo';
+  if (!['demo', 'empty', 'full', 'sparse'].includes(fixture)) throw new Error('Unknown fixture.');
   if (!['clear', 'preview'].includes(values.mode!)) throw new Error('Unknown mode. Choose clear or preview.');
+  if ([values.username, values.input, values.fixture].filter(value => value !== undefined).length > 1) {
+    throw new Error('Choose only one source: --username, --input, or --fixture.');
+  }
+  const username = values.username ?? (!values.input && !values.fixture ? process.env.CONTRIBOOM_USERNAME : undefined);
+  if (values.year !== undefined && !username) throw new Error('--year requires a GitHub account (--username or CONTRIBOOM_USERNAME).');
   const seed = Number(values.seed);
-  const data: Contribution[] = values.input
-    ? JSON.parse(await readFile(values.input, 'utf8')) as Contribution[]
-    : mockContributions(seed, values.fixture as Fixture);
+  let data: Contribution[];
+  let label: string | undefined;
+  if (username) {
+    const calendar = await getGitHubContributions({
+      username, year: values.year === undefined ? undefined : Number(values.year),
+      cacheDirectory: values['no-cache'] ? false : values['cache-dir'],
+      cacheTtlSeconds: Number(values['cache-ttl']), refresh: values.refresh,
+    });
+    data = calendar.contributions;
+    label = `@${calendar.login}`;
+    console.log(`Contributions for ${label} (${calendar.source}, ${calendar.range.from.slice(0, 10)} to ${calendar.range.to.slice(0, 10)})`);
+  } else {
+    data = values.input
+      ? JSON.parse(await readFile(values.input, 'utf8')) as Contribution[]
+      : mockContributions(seed, fixture as Fixture);
+  }
   if (!Array.isArray(data)) throw new Error('Input must be an array of contribution days.');
-  const arena = createArena(data);
+  const arena = createArena(data, data.length / 7);
   const replay = simulate(arena, {
     seed, mode: values.mode as 'clear' | 'preview', maxBombs: Number(values['max-bombs']),
     explosionRange: Number(values.range), maxDuration: Number(values.duration),
@@ -45,10 +75,11 @@ async function main(): Promise<void> {
   const output = path.resolve(values.output!);
   await mkdir(output, { recursive: true });
   await Promise.all([
-    writeFile(path.join(output, 'game.svg'), renderSvg(replay)),
-    writeFile(path.join(output, 'game-dark.svg'), renderSvg(replay, { theme: 'dark' })),
-    writeFile(path.join(output, 'game-light.svg'), renderSvg(replay, { theme: 'light' })),
-    writeFile(path.join(output, 'game-static.svg'), renderSvg(replay, { animated: false })),
+    writeFile(path.join(output, 'game.svg'), renderSvg(replay, { label })),
+    writeFile(path.join(output, 'game-dark.svg'), renderSvg(replay, { theme: 'dark', label })),
+    writeFile(path.join(output, 'game-light.svg'), renderSvg(replay, { theme: 'light', label })),
+    writeFile(path.join(output, 'game-static.svg'), renderSvg(replay, { animated: false, label })),
+    writeFile(path.join(output, 'contributions.json'), JSON.stringify(data, null, 2) + '\n'),
     writeFile(path.join(output, 'replay.json'), JSON.stringify(replay, null, 2) + '\n'),
   ]);
   console.log(`Generated ${output}\n${replay.stats.bombs} bombs · ${replay.stats.destroyed}/${replay.stats.totalBoxes} blocks cleared · ${replay.duration.toFixed(2)}s loop (${replay.config.mode})`);

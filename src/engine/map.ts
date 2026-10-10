@@ -9,8 +9,8 @@ export function inside(arena: Arena, p: Position): boolean {
 }
 
 export function createArena(data: readonly Contribution[], width = 53): Arena {
-  if (!Number.isInteger(width) || width < 1 || width > 53 || data.length !== width * 7) {
-    throw new Error('Expected exactly width × 7 contribution days (width 1–53).');
+  if (!Number.isInteger(width) || width < 1 || width > 54 || data.length !== width * 7) {
+    throw new Error('Expected exactly width × 7 contribution days (width 1–54).');
   }
   const dates = new Set<string>();
   const tiles = data.map((day, index) => {
