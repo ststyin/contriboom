@@ -20,12 +20,16 @@ describe('blast geometry', () => {
     expect(result.cells.map(key)).not.toContain('4,2');
     expect([...boxes]).toEqual(before);
   });
-  it('clips all rays to the calendar plus its single outer ring', () => {
-    const result = blast(arena, { x: -1, y: -1 }, new Set(), 10);
+  it('clips all rays to the contribution grid', () => {
+    const result = blast(arena, { x: 0, y: 0 }, new Set(), 10);
     expect(result.cells.every(cell => inside(arena, cell))).toBe(true);
-    expect(result.cells.map(key)).toContain('-1,-1');
-    expect(result.cells.filter(cell => cell.x === -1)).toHaveLength(9);
-    expect(result.cells.filter(cell => cell.y === -1)).toHaveLength(11);
+    expect(result.cells.map(key)).toContain('0,0');
+    expect(result.cells.filter(cell => cell.x === 0)).toHaveLength(7);
+    expect(result.cells.filter(cell => cell.y === 0)).toHaveLength(11);
+  });
+  it('rejects bombs on contribution blocks or outside the grid', () => {
+    expect(() => blast(arena, { x: 0, y: 0 }, new Set(['0,0']), 3)).toThrow(/empty cell/);
+    expect(() => blast(arena, { x: -1, y: 0 }, new Set(), 3)).toThrow(/inside/);
   });
 });
 
@@ -52,7 +56,13 @@ function verifyRound(fixture: Fixture, seed: number, options: Partial<GameConfig
   const replay = simulate(arena, { mode: 'preview', seed, ...options });
   const boxes = initialBoxes(arena);
   const pristine = new Set(boxes);
-  let player: Position = replay.start;
+  let player: Position | null = replay.start;
+  if (player) {
+    expect(inside(arena, player)).toBe(true);
+    expect(boxes.has(key(player))).toBe(false);
+  } else {
+    expect(replay.events).toEqual([]);
+  }
   let lastTime = 0;
   let lastMoveEnd = 0;
   let cleared = 0;
@@ -64,8 +74,9 @@ function verifyRound(fixture: Fixture, seed: number, options: Partial<GameConfig
     lastTime = event.time;
     expect(event.time).toBeLessThan(replay.duration);
     if (event.type === 'move') {
-      expect(same(event.from, player)).toBe(true);
-      expect(Math.abs(event.to.x - player.x) + Math.abs(event.to.y - player.y)).toBe(1);
+      expect(player).not.toBeNull();
+      expect(same(event.from, player!)).toBe(true);
+      expect(Math.abs(event.to.x - player!.x) + Math.abs(event.to.y - player!.y)).toBe(1);
       expect(inside(arena, event.to)).toBe(true);
       expect(boxes.has(key(event.to))).toBe(false);
       expect(event.time + 1e-8).toBeGreaterThanOrEqual(lastMoveEnd);
@@ -76,15 +87,16 @@ function verifyRound(fixture: Fixture, seed: number, options: Partial<GameConfig
       lastMoveEnd = event.time + event.duration;
     } else if (event.type === 'bomb') {
       expect(activeBomb).toBeUndefined();
-      expect(same(event.position, player)).toBe(true);
-      expect(boxes.has(key(player))).toBe(false);
+      expect(player).not.toBeNull();
+      expect(same(event.position, player!)).toBe(true);
+      expect(boxes.has(key(player!))).toBe(false);
       activeBomb = event;
       placed++;
     } else if (event.type === 'explode') {
       expect(activeBomb).toBeDefined();
       expect(event.time).toBeCloseTo(activeBomb!.time + activeBomb!.fuse, 8);
       expect(lastMoveEnd + replay.config.safetyMargin).toBeLessThan(event.time);
-      expect(event.cells.some(cell => same(cell, player))).toBe(false);
+      expect(event.cells.some(cell => same(cell, player!))).toBe(false);
       const expected = blast(arena, event.position, boxes, replay.config.explosionRange);
       expect(event.cells).toEqual(expected.cells);
       expect(event.destroyed).toEqual(expected.destroyed);
@@ -112,11 +124,32 @@ function verifyRound(fixture: Fixture, seed: number, options: Partial<GameConfig
   expect(replay.stats.totalBoxes).toBe(pristine.size);
   expect(replay.resultTime).toBeLessThan(replay.restoreTime);
   if (fixture === 'empty') expect(placed).toBe(0);
-  if (fixture === 'full') expect(placed).toBeGreaterThan(0);
+  if (fixture === 'full') {
+    expect(replay.start).toBeNull();
+    expect(placed).toBe(0);
+    expect(cleared).toBe(0);
+  }
   return replay;
 }
 
 describe('simulation invariants', () => {
+  it('keeps the start, every move, bomb and blast inside the contribution grid', () => {
+    for (const fixture of ['demo', 'empty', 'full', 'sparse'] as const) {
+      const replay = simulate(createArena(mockContributions(42, fixture)), { mode: 'preview' });
+      const positions = [...(replay.start ? [replay.start] : []), ...replay.events.flatMap(event => {
+        if (event.type === 'move') return [event.from, event.to];
+        if (event.type === 'bomb') return [event.position];
+        if (event.type === 'explode') return [event.position, ...event.cells];
+        return event.cells;
+      })];
+      for (const position of positions) {
+        expect(position.x).toBeGreaterThanOrEqual(0);
+        expect(position.x).toBeLessThan(replay.arena.width);
+        expect(position.y).toBeGreaterThanOrEqual(0);
+        expect(position.y).toBeLessThan(replay.arena.height);
+      }
+    }
+  });
   for (const fixture of ['demo', 'empty', 'full', 'sparse'] as const) {
     it(`safely handles ${fixture} input across twelve seeds`, () => {
       for (let seed = 0; seed < 12; seed++) verifyRound(fixture, seed);
@@ -135,20 +168,21 @@ describe('simulation invariants', () => {
     expect(first).toEqual(second);
     expect(renderSvg(first)).toBe(renderSvg(second));
   });
-  for (const fixture of ['demo', 'empty', 'full', 'sparse'] as const) {
+  for (const fixture of ['demo', 'empty', 'sparse'] as const) {
     it(`clears every ${fixture} box and safely restores it across four seeds`, () => {
       for (let seed = 0; seed < 4; seed++) verifyRound(fixture, seed, { mode: 'clear' });
     }, 30000);
   }
   it('full clear ignores preview bomb and duration caps', () => {
-    const replay = verifyRound('full', 42, { mode: 'clear', maxBombs: 1, maxDuration: 8 });
-    expect(replay.stats.destroyed).toBe(371);
+    const replay = verifyRound('demo', 42, { mode: 'clear', maxBombs: 1, maxDuration: 8 });
+    expect(replay.stats.destroyed).toBe(replay.stats.totalBoxes);
     expect(replay.stats.remaining).toBe(0);
     expect(replay.stats.bombs).toBeGreaterThan(5);
     expect(replay.duration).toBeGreaterThan(60);
   });
   it('never presents an unsafe or incomplete run as a full clear', () => {
-    expect(() => simulate(createArena(mockContributions(42, 'full')), { mode: 'clear', fuse: 0.1 })).toThrow(/Cannot safely clear/);
+    expect(() => simulate(createArena(mockContributions(42, 'demo')), { mode: 'clear', fuse: 0.1 })).toThrow(/Cannot safely clear/);
+    expect(() => simulate(createArena(mockContributions(42, 'full')), { mode: 'clear' })).toThrow(/Cannot safely clear/);
   });
 });
 

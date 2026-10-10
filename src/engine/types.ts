@@ -36,7 +36,7 @@ export interface GameConfig {
 export interface Replay {
   arena: Arena;
   config: GameConfig;
-  start: Position;
+  start: Position | null;
   events: GameEvent[];
   duration: number;
   resultTime: number;

@@ -9,7 +9,7 @@ export interface RenderOptions { theme?: Theme; label?: string; animated?: boole
 
 export function renderSvg(replay: Replay, options: RenderOptions = {}): string {
   const theme = THEMES[options.theme ?? 'light'];
-  const animated = options.animated !== false;
+  const animated = options.animated !== false && replay.start !== null;
   const { arena, duration } = replay;
   const stride = 22;
   const boardX = 42;
@@ -137,16 +137,18 @@ ${visibleBetween(replay.restoreTime, duration - 1, duration)}
 ${animation('x', [[0, calendarX - 6], [replay.restoreTime, calendarX - 6], [duration - 1, calendarX + arena.width * stride], [duration, calendarX - 6]], duration, 'linear')}</rect>`);
   }
 
-  const positionFrames: Frame[] = [[0, xy(replay.start)]];
-  for (const event of replay.events) if (event.type === 'move') {
-    positionFrames.push([event.time, xy(event.from)], [event.time + event.duration, xy(event.to)]);
+  if (replay.start) {
+    const positionFrames: Frame[] = [[0, xy(replay.start)]];
+    for (const event of replay.events) if (event.type === 'move') {
+      positionFrames.push([event.time, xy(event.from)], [event.time + event.duration, xy(event.to)]);
+    }
+    const finalPosition = positionFrames.at(-1)![1];
+    positionFrames.push([replay.restoreTime, finalPosition], [duration - 0.7, xy(replay.start)], [duration, xy(replay.start)]);
+    emit(`<g id="player" transform="translate(${xy(replay.start)})">
+  ${animated ? animation('transform', positionFrames, duration, 'linear', true) : ''}
+  ${animated ? animation('opacity', [[0, 1], [replay.restoreTime - 0.12, 1], [replay.restoreTime, 0], [duration - 0.7, 0], [duration - 0.45, 1], [duration, 1]], duration, 'linear') : ''}
+  <use href="#robot"/></g>`);
   }
-  const finalPosition = positionFrames.at(-1)![1];
-  positionFrames.push([replay.restoreTime, finalPosition], [duration - 0.7, xy(replay.start)], [duration, xy(replay.start)]);
-  emit(`<g id="player" transform="translate(${xy(replay.start)})">
-${animated ? animation('transform', positionFrames, duration, 'linear', true) : ''}
-${animated ? animation('opacity', [[0, 1], [replay.restoreTime - 0.12, 1], [replay.restoreTime, 0], [duration - 0.7, 0], [duration - 0.45, 1], [duration, 1]], duration, 'linear') : ''}
-<use href="#robot"/></g>`);
 
   emit(`<path d="M42 376H${width - 42}" stroke="${theme.border}"/>
 <text x="42" y="401" font-family="${font}" font-size="10" fill="${theme.muted}" letter-spacing="1.2">YOUR CONTRIBUTIONS, AT PLAY</text>

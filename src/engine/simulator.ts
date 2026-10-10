@@ -22,9 +22,21 @@ export function simulate(arena: Arena, options: Partial<GameConfig> = {}): Repla
   const boxes = initialBoxes(arena);
   const totalBoxes = boxes.size;
   const random = seededRandom(config.seed);
-  // An edge spawn never overwrites a contribution, including a completely full map.
-  const start = { x: Math.min(5, arena.width - 1), y: -1 };
-  let player: Position = start;
+  // Spawn in the largest connected area of empty cells, without clearing data.
+  const visited = new Set<string>();
+  let largest: Position[] = [];
+  for (const tile of arena.tiles) {
+    if (boxes.has(key(tile)) || visited.has(key(tile))) continue;
+    const component = reachable(arena, tile, boxes).positions;
+    for (const cell of component) visited.add(key(cell));
+    if (component.length > largest.length) largest = component;
+  }
+  const preferred = { x: Math.min(5, arena.width - 1), y: Math.floor(arena.height / 2) };
+  const start = largest.reduce<Position | null>((best, cell) => {
+    const distance = (p: Position): number => Math.abs(p.x - preferred.x) + Math.abs(p.y - preferred.y);
+    return !best || distance(cell) < distance(best) ? { x: cell.x, y: cell.y } : best;
+  }, null);
+  let player: Position | null = start;
   let time = 1.2;
   let bombCount = 0;
   const events: GameEvent[] = [];
@@ -34,6 +46,7 @@ export function simulate(arena: Arena, options: Partial<GameConfig> = {}): Repla
   const maxEscapeSteps = Math.max(0, Math.ceil((config.fuse - config.safetyMargin) / config.stepDuration) - 1);
 
   function walk(path: Position[]): void {
+    if (!player) throw new Error('Cannot move without an empty spawn cell.');
     for (const destination of path) {
       events.push({ type: 'move', time, duration: config.stepDuration, from: player, to: destination });
       player = destination;
@@ -41,7 +54,7 @@ export function simulate(arena: Arena, options: Partial<GameConfig> = {}): Repla
     }
   }
 
-  for (let id = 0; id < bombLimit && boxes.size > 0; id++) {
+  for (let id = 0; id < bombLimit && boxes.size > 0 && player; id++) {
     const destinations = reachable(arena, player, boxes);
     let best: { position: Position; approach: Position[]; escape: Position[]; score: number; impact: ReturnType<typeof blast> } | undefined;
     for (const position of destinations.positions) {
@@ -75,13 +88,16 @@ export function simulate(arena: Arena, options: Partial<GameConfig> = {}): Repla
     throw new Error(`Cannot safely clear ${boxes.size} remaining boxes with this fuse, speed and blast range. Increase the fuse or use preview mode.`);
   }
 
-  if (bombCount === 0) {
+  if (bombCount === 0 && start && player) {
     // Empty calendars get a short honest patrol, without invented contributions.
     const map = reachable(arena, player, boxes);
-    const destination = map.positions.find(p => p.x === Math.min(start.x + 8, arena.width) && p.y === -1);
-    if (destination) {
+    const patrol = map.positions.reduce<Position[]>((longest, position) => {
+      const route = map.pathTo(position)!;
+      return route.length > longest.length ? route : longest;
+    }, []);
+    if (patrol.length) {
       const availableSteps = Math.max(0, Math.floor((config.maxDuration - 4.3 - time) / config.stepDuration));
-      walk(map.pathTo(destination)!.slice(0, availableSteps));
+      walk(patrol.slice(0, availableSteps));
     }
   }
   const resultTime = Math.max(time + 0.2, 3.2);

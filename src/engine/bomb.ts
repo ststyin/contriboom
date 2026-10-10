@@ -4,6 +4,7 @@ import type { Arena, Position } from './types.ts';
 export function blast(arena: Arena, position: Position, boxes: ReadonlySet<string>, range: number): {
   cells: Position[]; destroyed: Position[];
 } {
+  if (!inside(arena, position) || boxes.has(key(position))) throw new Error('A bomb must be placed on an empty cell inside the contribution grid.');
   const cells: Position[] = [position];
   const destroyed: Position[] = [];
   for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {

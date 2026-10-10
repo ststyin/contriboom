@@ -3,9 +3,9 @@ import type { Arena, Contribution, Position } from './types.ts';
 export const key = ({ x, y }: Position): string => `${x},${y}`;
 export const same = (a: Position, b: Position): boolean => a.x === b.x && a.y === b.y;
 
-/** One traversable ring surrounds the unmodified contribution calendar. */
+/** Movement and explosions stay within the contribution calendar. */
 export function inside(arena: Arena, p: Position): boolean {
-  return p.x >= -1 && p.x <= arena.width && p.y >= -1 && p.y <= arena.height;
+  return p.x >= 0 && p.x < arena.width && p.y >= 0 && p.y < arena.height;
 }
 
 export function createArena(data: readonly Contribution[], width = 53): Arena {
