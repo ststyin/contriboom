@@ -44,11 +44,10 @@ async function main(): Promise<void> {
   });
   const output = path.resolve(values.output!);
   await mkdir(output, { recursive: true });
-  const label = values.input ? 'LOCAL CONTRIBUTION DATA' : `${values.fixture!.toUpperCase()} DATA`;
   await Promise.all([
-    writeFile(path.join(output, 'game.svg'), renderSvg(replay, { theme: 'dark', label })),
-    writeFile(path.join(output, 'game-light.svg'), renderSvg(replay, { theme: 'light', label })),
-    writeFile(path.join(output, 'game-static.svg'), renderSvg(replay, { theme: 'dark', label, animated: false })),
+    writeFile(path.join(output, 'game.svg'), renderSvg(replay, { theme: 'dark' })),
+    writeFile(path.join(output, 'game-light.svg'), renderSvg(replay, { theme: 'light' })),
+    writeFile(path.join(output, 'game-static.svg'), renderSvg(replay, { theme: 'dark', animated: false })),
     writeFile(path.join(output, 'replay.json'), JSON.stringify(replay, null, 2) + '\n'),
   ]);
   console.log(`Generated ${output}\n${replay.stats.bombs} bombs · ${replay.stats.destroyed}/${replay.stats.totalBoxes} blocks cleared · ${replay.duration.toFixed(2)}s loop (${replay.config.mode})`);

@@ -27,7 +27,7 @@ export function renderSvg(replay: Replay, options: RenderOptions = {}): string {
 
   emit(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="title desc">
 <title id="title">Contriboom — Make your contributions a blast.</title>
-<desc id="desc">${escapeXml(options.label ?? 'Simulated contributions')}. An automatically replayed contribution-calendar arena. A robot places ${replay.stats.bombs} bombs and clears ${replay.stats.destroyed} blocks, then restores the calendar. No keyboard input required.</desc>
+<desc id="desc">Make your contributions a blast.${options.label ? ` ${escapeXml(options.label)}.` : ''} A robot clears the contribution calendar, then rebuilds it.</desc>
 <defs>
   <g id="robot">
     <ellipse cx="0" cy="9" rx="9" ry="3" fill="#000" opacity=".24"/>
@@ -58,7 +58,7 @@ export function renderSvg(replay: Replay, options: RenderOptions = {}): string {
 <g transform="translate(42 39)"><rect width="28" height="28" rx="8" fill="${theme.accent}"/><path d="m14 3 2 7 7-2-4 6 6 3-8 1-1 7-4-6-6 3 2-7-6-3 8-1Z" fill="${theme.background}"/></g>
 <text x="82" y="61" font-size="29" font-weight="750" letter-spacing="-1">Contriboom<tspan fill="${theme.accent}">.</tspan></text>
 <text x="42" y="91" font-size="14" fill="${theme.muted}">Make your contributions a blast.</text>
-<text x="${width - 42}" y="91" font-family="${font}" font-size="10" fill="${theme.muted}" text-anchor="end">${escapeXml(options.label ?? 'DEMO DATA')} / ${arena.width} WEEKS</text>
+${options.label ? `<text x="${width - 42}" y="91" font-family="${font}" font-size="10" fill="${theme.muted}" text-anchor="end">${escapeXml(options.label)}</text>` : ''}
 <path d="M42 111H${width - 42}" stroke="${theme.border}"/>
 <text x="42" y="136" font-family="${font}" font-size="10" letter-spacing="1.8" fill="${theme.muted}">CONTRIBUTION ARENA</text>
 <rect x="${width - 218}" y="38" width="176" height="31" rx="15.5" fill="${theme.panel}" stroke="${theme.border}"/>
@@ -149,21 +149,8 @@ ${animated ? animation('opacity', [[0, 1], [replay.restoreTime - 0.12, 1], [repl
 <use href="#robot"/></g>`);
 
   emit(`<path d="M42 376H${width - 42}" stroke="${theme.border}"/>
-<text x="42" y="401" font-family="${font}" font-size="10" fill="${theme.muted}" letter-spacing="1.2">${replay.config.mode === 'clear' ? 'FULL CLEAR' : 'SHORT PREVIEW'} / ${duration >= 60 ? `${Math.floor(duration / 60)}m ${Math.floor(duration % 60)}s` : `${duration.toFixed(1)}s`} LOOP</text>`);
-  let cumulative = 0;
-  const scoreFrames: Array<{ begin: number; value: number }> = [{ begin: 0, value: 0 }];
-  for (const explosion of explosions) {
-    cumulative += explosion.destroyed.length;
-    scoreFrames.push({ begin: explosion.time, value: cumulative });
-  }
-  for (let index = 0; index < scoreFrames.length; index++) {
-    const score = scoreFrames[index]!;
-    const end = scoreFrames[index + 1]?.begin ?? duration - 0.45;
-    const clearedText = `${String(score.value).padStart(2, '0')}/${replay.stats.totalBoxes} blocks cleared.`;
-    const resultText = score.value === replay.stats.totalBoxes ? 'Arena clear. Time for a fresh start.' : 'A little room to roam.';
-    emit(`<text data-score="${score.value}" x="42" y="425" font-size="14" font-weight="600" opacity="${!animated && index === 0 ? 1 : 0}">${replay.stats.bombs === 0 ? (replay.stats.contributions === 0 ? 'Quiet calendar. Ready for your next commit.' : 'No safe targets this round. Contributions stay intact.') : `${clearedText} ${resultText}`}${animated ? visibleBetween(score.begin, end, duration) : ''}</text>`);
-  }
-  if (animated) emit(`<text x="42" y="425" font-size="14" font-weight="600" opacity="0">${replay.stats.bombs ? `00/${replay.stats.totalBoxes} blocks cleared. A little room to roam.` : (replay.stats.contributions ? 'No safe targets this round. Contributions stay intact.' : 'Quiet calendar. Ready for your next commit.')}${visibleBetween(duration - 0.45, duration, duration)}</text>`);
+<text x="42" y="401" font-family="${font}" font-size="10" fill="${theme.muted}" letter-spacing="1.2">YOUR CONTRIBUTIONS, AT PLAY</text>
+<text x="42" y="425" font-size="14" font-weight="600">${replay.stats.contributions ? 'A little room to roam.' : 'Quiet calendar. Ready for your next commit.'}</text>`);
   emit(`<text x="${width - 210}" y="401" font-family="${font}" font-size="10" fill="${theme.muted}">${replay.stats.contributions.toLocaleString('en-US')} CONTRIBUTIONS</text>
 <text x="${width - 210}" y="425" font-size="10" fill="${theme.muted}">Less</text>`);
   for (let index = 0; index < 5; index++) emit(`<rect x="${width - 179 + index * 20}" y="415" width="15" height="15" rx="3" fill="${theme.greens[index]}"/>`);

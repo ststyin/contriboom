@@ -4,6 +4,8 @@ coverage/
 
 # Generated output and local work
 /artifacts*/
+/preview.html
+/scripts/preview.ts
 /work/
 /dist/
 /.cache/
