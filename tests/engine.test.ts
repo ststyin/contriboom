@@ -16,7 +16,7 @@ describe('blast geometry', () => {
     const boxes = new Set(['7,3', '8,3', '3,3', '5,1', '5,5']);
     const before = [...boxes];
     const result = blast(arena, { x: 5, y: 3 }, boxes, 4);
-    expect(result.destroyed.map(key).sort()).toEqual(['3,3', '5,1', '5,5', '7,3']);
+    expect(result.hits.map(key).sort()).toEqual(['3,3', '5,1', '5,5', '7,3']);
     expect(result.cells.map(key)).not.toContain('8,3');
     expect(result.cells.map(key)).not.toContain('5,0');
     expect(result.cells.map(key)).not.toContain('4,2');
@@ -57,6 +57,8 @@ function verifyRound(fixture: Fixture, seed: number, options: Partial<GameConfig
   const arena = createArena(data);
   const replay = simulate(arena, { mode: 'preview', seed, ...options });
   const boxes = initialBoxes(arena);
+  const originalLevels = new Map(arena.tiles.map(tile => [key(tile), tile.level]));
+  const levels = new Map(originalLevels);
   const pristine = new Set(boxes);
   let player: Position | null = replay.start;
   if (player) {
@@ -101,7 +103,13 @@ function verifyRound(fixture: Fixture, seed: number, options: Partial<GameConfig
       expect(event.cells.some(cell => same(cell, player!))).toBe(false);
       const expected = blast(arena, event.position, boxes, replay.config.explosionRange);
       expect(event.cells).toEqual(expected.cells);
-      expect(event.destroyed).toEqual(expected.destroyed);
+      expect(event.damaged.map(hit => hit.position)).toEqual(expected.hits);
+      for (const hit of event.damaged) {
+        expect(hit.fromLevel).toBe(levels.get(key(hit.position)));
+        expect(hit.toLevel).toBe(replay.config.blockDamage === 'fade' ? hit.fromLevel - 1 : 0);
+        levels.set(key(hit.position), hit.toLevel);
+      }
+      expect(event.destroyed).toEqual(event.damaged.filter(hit => hit.toLevel === 0).map(hit => hit.position));
       for (const cell of event.destroyed) {
         expect(boxes.delete(key(cell))).toBe(true);
         cleared++;
@@ -111,13 +119,15 @@ function verifyRound(fixture: Fixture, seed: number, options: Partial<GameConfig
     } else {
       expect(event.time).toBeGreaterThanOrEqual(replay.restoreTime);
       for (const cell of event.cells) {
-        expect(boxes.has(key(cell))).toBe(false);
+        expect(levels.get(key(cell))).toBeLessThan(originalLevels.get(key(cell))!);
+        levels.set(key(cell), originalLevels.get(key(cell))!);
         boxes.add(key(cell));
       }
     }
   }
   expect(data).toEqual(original);
   expect(boxes).toEqual(pristine);
+  expect(levels).toEqual(originalLevels);
   expect(replay.stats.bombs).toBe(placed);
   expect(replay.stats.destroyed).toBe(cleared);
   if (replay.config.mode === 'preview') expect(replay.duration).toBeLessThanOrEqual(replay.config.maxDuration);
@@ -181,6 +191,31 @@ describe('simulation invariants', () => {
     expect(replay.stats.remaining).toBe(0);
     expect(replay.stats.bombs).toBeGreaterThan(5);
     expect(replay.duration).toBeGreaterThan(60);
+  });
+  it('safely clears and restores durable blocks, including repeated hits and changed routes', () => {
+    for (const seed of [3, 42, 71]) {
+      const replay = verifyRound('demo', seed, { mode: 'clear', blockDamage: 'fade', maxBombs: 1 });
+      const hitCount = replay.events.reduce((sum, event) => sum + (event.type === 'explode' ? event.damaged.length : 0), 0);
+      expect(hitCount).toBe(replay.arena.tiles.reduce((sum, tile) => sum + tile.level, 0));
+    }
+    for (const range of [1, 2, 3]) verifyRound('sparse', 42, { blockDamage: 'fade', explosionRange: range, maxBombs: 3 });
+  }, 30000);
+  it('needs four hits for a level-four block and restores partially damaged blocks in a preview', () => {
+    const data = mockContributions(42, 'empty');
+    data[7 * 7 + 3] = { ...data[7 * 7 + 3]!, count: 12, level: 4 };
+    const arena = createArena(data);
+    const full = simulate(arena, { blockDamage: 'fade' });
+    expect(full.stats).toMatchObject({ bombs: 4, destroyed: 1, remaining: 0 });
+    expect(full.events.flatMap(event => event.type === 'explode' ? event.damaged.map(hit => [hit.fromLevel, hit.toLevel]) : [])).toEqual([[4, 3], [3, 2], [2, 1], [1, 0]]);
+    const partial = simulate(arena, { mode: 'preview', blockDamage: 'fade', maxBombs: 1 });
+    expect(partial.stats).toMatchObject({ bombs: 1, destroyed: 0, remaining: 1 });
+    expect(partial.events.filter(event => event.type === 'restore').flatMap(event => event.cells.map(key))).toEqual(['7,3']);
+    const svg = renderSvg(partial, { theme: 'mint' });
+    const cell = svg.match(/<g data-cell="7,3">[\s\S]*?<\/g>/)![0];
+    expect(cell).toContain(`values="${THEMES.mint.colors[4]};${THEMES.mint.colors[3]};${THEMES.mint.colors[4]};${THEMES.mint.colors[4]}"`);
+    expect(cell).not.toContain('attributeName="opacity"');
+    expect(renderSvg(full, { animated: false })).toBe(renderSvg(simulate(arena), { animated: false }));
+    expect(data[7 * 7 + 3]!.level).toBe(4);
   });
   it('never presents an unsafe or incomplete run as a full clear', () => {
     expect(() => simulate(createArena(mockContributions(42, 'demo')), { mode: 'clear', fuse: 0.1 })).toThrow(/Cannot safely clear/);

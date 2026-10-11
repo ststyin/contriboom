@@ -15,10 +15,17 @@ export interface Arena {
   readonly tiles: readonly Tile[];
 }
 
+export type BlockDamage = 'instant' | 'fade';
+export interface BlockHit {
+  position: Position;
+  fromLevel: Level;
+  toLevel: Level;
+}
+
 export type GameEvent =
   | { type: 'move'; time: number; duration: number; from: Position; to: Position }
   | { type: 'bomb'; time: number; id: number; position: Position; fuse: number }
-  | { type: 'explode'; time: number; duration: number; id: number; position: Position; cells: Position[]; destroyed: Position[] }
+  | { type: 'explode'; time: number; duration: number; id: number; position: Position; cells: Position[]; damaged: BlockHit[]; destroyed: Position[] }
   | { type: 'restore'; time: number; column: number; cells: Position[] };
 
 export interface GameConfig {
@@ -26,6 +33,7 @@ export interface GameConfig {
   seed: number;
   maxBombs: number;
   explosionRange: number;
+  blockDamage: BlockDamage;
   stepDuration: number;
   fuse: number;
   safetyMargin: number;

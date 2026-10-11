@@ -5,7 +5,7 @@ import { createArena } from './engine/map.ts';
 import { simulate } from './engine/simulator.ts';
 import { mockContributions } from './fixtures/contributions.ts';
 import type { Fixture } from './fixtures/contributions.ts';
-import type { Contribution } from './engine/types.ts';
+import type { BlockDamage, Contribution } from './engine/types.ts';
 import { renderSvg } from './renderer/svg.ts';
 import { loadPlayerIcon } from './renderer/player-icon.ts';
 import type { PlayerIconTrim } from './renderer/player-icon.ts';
@@ -31,6 +31,7 @@ async function main(): Promise<void> {
     mode: { type: 'string', default: 'clear' },
     'max-bombs': { type: 'string', default: '5' },
     range: { type: 'string', default: '3' },
+    'block-damage': { type: 'string', default: 'instant' },
     duration: { type: 'string', default: '22' },
     help: { type: 'boolean', default: false },
   } });
@@ -43,6 +44,7 @@ async function main(): Promise<void> {
       '                    [--theme <name>] [--player-icon path/to/image.png]\n' +
       '                    [--player-icon-trim auto|none]\n' +
       '                    [--mode clear|preview] [--range 3]\n' +
+      '                    [--block-damage instant|fade]\n' +
       '                    [--max-bombs 5] [--duration 22] (preview only)\n\n' +
       'GitHub: set GITHUB_TOKEN or GH_TOKEN. Default period is the past year.\n' +
       'CONTRIBOOM_USERNAME supplies a default account; --input or --fixture overrides it.\n' +
@@ -55,6 +57,7 @@ async function main(): Promise<void> {
   }
   if (!Object.hasOwn(THEMES, values.theme!)) throw new Error(`Unknown theme. Choose ${Object.keys(THEMES).join(', ')}.`);
   if (!['auto', 'none'].includes(values['player-icon-trim']!)) throw new Error('Unknown player-icon-trim. Choose auto or none.');
+  if (!['instant', 'fade'].includes(values['block-damage']!)) throw new Error('Unknown block-damage. Choose instant or fade.');
   const theme = values.theme as Theme;
   const fixture = values.fixture ?? 'demo';
   if (!['demo', 'empty', 'full', 'sparse'].includes(fixture)) throw new Error('Unknown fixture.');
@@ -86,7 +89,7 @@ async function main(): Promise<void> {
   const arena = createArena(data, data.length / 7);
   const replay = simulate(arena, {
     seed, mode: values.mode as 'clear' | 'preview', maxBombs: Number(values['max-bombs']),
-    explosionRange: Number(values.range), maxDuration: Number(values.duration),
+    explosionRange: Number(values.range), blockDamage: values['block-damage'] as BlockDamage, maxDuration: Number(values.duration),
   });
   const output = path.resolve(values.output!);
   await mkdir(output, { recursive: true });

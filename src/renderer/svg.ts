@@ -88,16 +88,26 @@ export function renderSvg(replay: Replay, options: RenderOptions = {}): string {
   emit('</g><g id="contributions">');
   const destroyedAt = new Map<string, number>();
   const restoredAt = new Map<string, number>();
+  const damageFrames = new Map<string, Frame[]>();
   for (const event of replay.events) {
-    if (event.type === 'explode') for (const cell of event.destroyed) destroyedAt.set(key(cell), event.time);
+    if (event.type === 'explode') {
+      for (const cell of event.destroyed) destroyedAt.set(key(cell), event.time);
+      if (replay.config.blockDamage === 'fade') for (const hit of event.damaged) {
+        const id = key(hit.position);
+        const frames = damageFrames.get(id) ?? [];
+        frames.push([event.time, theme.colors[hit.toLevel]]);
+        damageFrames.set(id, frames);
+      }
+    }
     if (event.type === 'restore') for (const cell of event.cells) restoredAt.set(key(cell), event.time);
   }
   for (const tile of arena.tiles) {
     if (!tile.count) continue;
     const id = key(tile);
     const hit = destroyedAt.get(id);
+    const damage = animated ? damageFrames.get(id) : undefined;
     emit(`<g data-cell="${id}"><title>${escapeXml(tile.date)}: ${tile.count} contributions</title>
-<rect x="${calendarX + tile.x * stride}" y="${calendarY + tile.y * stride}" width="20" height="20" rx="3" fill="${theme.colors[tile.level]}"/>
+<rect x="${calendarX + tile.x * stride}" y="${calendarY + tile.y * stride}" width="20" height="20" rx="3" fill="${theme.colors[tile.level]}"${damage ? `>${animation('fill', [[0, theme.colors[tile.level]], ...damage, [restoredAt.get(id)!, theme.colors[tile.level]], [duration, theme.colors[tile.level]]], duration)}</rect>` : '/>'}
 <path d="M${calendarX + tile.x * stride + 3} ${calendarY + tile.y * stride + 3}h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
 ${animated && hit !== undefined ? animation('opacity', [[0, 1], [hit, 0], [restoredAt.get(id)!, 1], [duration, 1]], duration) : ''}</g>`);
   }

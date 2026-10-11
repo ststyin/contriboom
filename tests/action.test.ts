@@ -65,7 +65,7 @@ describe('GitHub Action entry point', () => {
     await mkdir(path.join(context.directory, 'my assets'));
     const iconPath = "my assets/player 'icon'.png";
     await writeFile(path.join(context.directory, iconPath), icon);
-    const { stdout } = await context.run({ CONTRIBOOM_INPUT_THEME: 'lavender', CONTRIBOOM_INPUT_PLAYER_ICON: iconPath });
+    const { stdout } = await context.run({ CONTRIBOOM_INPUT_THEME: 'lavender', CONTRIBOOM_INPUT_PLAYER_ICON: iconPath, CONTRIBOOM_INPUT_BLOCK_DAMAGE: 'fade' });
     const outputs = Object.fromEntries((await readFile(context.outputFile, 'utf8')).trim().split('\n').map(line => {
       const separator = line.indexOf('=');
       return [line.slice(0, separator), line.slice(separator + 1)];
@@ -83,7 +83,7 @@ describe('GitHub Action entry point', () => {
     expect(await readFile(outputs['svg-static']!, 'utf8')).toContain('#F2EFF5');
     expect((await readdir(outputs['output-dir']!)).filter(name => name.endsWith('.svg')).sort()).toEqual(['game-static.svg', 'game.svg']);
     const replay = JSON.parse(await readFile(path.join(outputs['output-dir']!, 'replay.json'), 'utf8'));
-    expect(replay.config).toMatchObject({ mode: 'preview', seed: 71, explosionRange: 2, maxBombs: 2, maxDuration: 12 });
+    expect(replay.config).toMatchObject({ mode: 'preview', seed: 71, explosionRange: 2, blockDamage: 'fade', maxBombs: 2, maxDuration: 12 });
     expect(replay.duration).toBeLessThanOrEqual(12);
     expect(replay.stats.bombs).toBeLessThanOrEqual(2);
     expect(stdout).not.toContain(context.env.CONTRIBOOM_INPUT_TOKEN);

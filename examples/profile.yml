@@ -34,6 +34,7 @@ jobs:
           output-dir: images/contriboom
           mode: clear
           # theme: mint
+          # block-damage: fade
           # player-icon: assets/bomber.png
           # player-icon-trim: none # Default: auto (trim transparent or near-white margins).
 

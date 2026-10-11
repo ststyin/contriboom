@@ -140,4 +140,15 @@ describe('generation CLI', () => {
     await expect(run(['--username', 'octocat', '--output', output])).rejects.toMatchObject({ stderr: expect.stringContaining('Set GITHUB_TOKEN or GH_TOKEN') });
     expect(await readdir(output)).toEqual([]);
   });
+
+  it('generates fading blocks and rejects unsupported damage modes before requesting GitHub', async () => {
+    const output = await directory();
+    await run(['--fixture', 'sparse', '--block-damage', 'fade', '--output', output]);
+    const replay = JSON.parse(await readFile(path.join(output, 'replay.json'), 'utf8'));
+    expect(replay.config.blockDamage).toBe('fade');
+    expect(replay.stats.remaining).toBe(0);
+    expect(await readFile(path.join(output, 'game.svg'), 'utf8')).toContain('attributeName="fill"');
+    expect(await readFile(path.join(output, 'game-static.svg'), 'utf8')).not.toContain('<animate');
+    await expect(run(['--username', 'octocat', '--block-damage', 'invalid', '--output', output])).rejects.toMatchObject({ stderr: expect.stringContaining('Unknown block-damage') });
+  });
 });
