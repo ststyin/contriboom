@@ -2,13 +2,15 @@ import { key } from '../engine/map.ts';
 import type { Position, Replay } from '../engine/types.ts';
 import { animation, escapeXml, visibleBetween } from './animations.ts';
 import type { Frame } from './animations.ts';
-import { THEMES } from './themes.ts';
+import { DEFAULT_THEME, THEMES } from './themes.ts';
 import type { Theme } from './themes.ts';
 
 export interface RenderOptions { theme?: Theme; label?: string; animated?: boolean }
 
 export function renderSvg(replay: Replay, options: RenderOptions = {}): string {
-  const theme = THEMES[options.theme ?? 'light'];
+  const theme = THEMES[options.theme ?? DEFAULT_THEME];
+  // Preserve the existing dark artwork; additional palettes only recolor tiles.
+  const effectAccent = options.theme === 'dark' ? '#ffae57' : '#b65a15';
   const animated = options.animated !== false && replay.start !== null;
   const { arena, duration } = replay;
   const stride = 22;
@@ -71,7 +73,7 @@ export function renderSvg(replay: Replay, options: RenderOptions = {}): string {
     const id = key(tile);
     const hit = destroyedAt.get(id);
     emit(`<g data-cell="${id}"><title>${escapeXml(tile.date)}: ${tile.count} contributions</title>
-<rect x="${calendarX + tile.x * stride}" y="${calendarY + tile.y * stride}" width="20" height="20" rx="3" fill="${theme.greens[tile.level]}"/>
+<rect x="${calendarX + tile.x * stride}" y="${calendarY + tile.y * stride}" width="20" height="20" rx="3" fill="${theme.colors[tile.level]}"/>
 <path d="M${calendarX + tile.x * stride + 3} ${calendarY + tile.y * stride + 3}h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
 ${animated && hit !== undefined ? animation('opacity', [[0, 1], [hit, 0], [restoredAt.get(id)!, 1], [duration, 1]], duration) : ''}</g>`);
   }
@@ -87,7 +89,7 @@ ${animated && hit !== undefined ? animation('opacity', [[0, 1], [hit, 0], [resto
       for (const cell of event.destroyed) {
         for (const [dx, dy] of [[-9, -13], [9, -11], [-11, 8], [12, 6]]) {
           emit(`<g opacity="0">${visibleBetween(event.time, event.time + 0.55, duration)}
-<g transform="translate(${xy(cell)})">${animation('transform', [[0, xy(cell)], [event.time, xy(cell)], [event.time + 0.55, `${calendarX + cell.x * stride + 10 + dx!} ${calendarY + cell.y * stride + 10 + dy!}`], [duration, xy(cell)]], duration, 'linear', true)}<rect x="-1.5" y="-1.5" width="3" height="3" rx=".5" fill="${theme.accent}"/></g></g>`);
+<g transform="translate(${xy(cell)})">${animation('transform', [[0, xy(cell)], [event.time, xy(cell)], [event.time + 0.55, `${calendarX + cell.x * stride + 10 + dx!} ${calendarY + cell.y * stride + 10 + dy!}`], [duration, xy(cell)]], duration, 'linear', true)}<rect x="-1.5" y="-1.5" width="3" height="3" rx=".5" fill="${effectAccent}"/></g></g>`);
         }
       }
     }
@@ -95,9 +97,9 @@ ${animated && hit !== undefined ? animation('opacity', [[0, 1], [hit, 0], [resto
       const frames: Frame[] = [[0, 7.5], [bomb.time, 7.5]];
       for (let t = bomb.time + 0.15, index = 0; t < bomb.time + bomb.fuse; t += 0.15, index++) frames.push([t, index % 2 ? 7.5 : 9]);
       frames.push([bomb.time + bomb.fuse, 7.5], [duration, 7.5]);
-      emit(`<g data-bomb="${bomb.id}" transform="translate(${xy(bomb.position)})" opacity="0">${visibleBetween(bomb.time, bomb.time + bomb.fuse, duration)}<circle r="7.5" fill="none" stroke="${theme.accent}" stroke-width="2" opacity=".5">${animation('r', frames, duration, 'linear')}</circle><use href="#bomb-shape"/></g>`);
+      emit(`<g data-bomb="${bomb.id}" transform="translate(${xy(bomb.position)})" opacity="0">${visibleBetween(bomb.time, bomb.time + bomb.fuse, duration)}<circle r="7.5" fill="none" stroke="${effectAccent}" stroke-width="2" opacity=".5">${animation('r', frames, duration, 'linear')}</circle><use href="#bomb-shape"/></g>`);
     }
-    emit(`<rect id="rebuild-sweep" x="${calendarX - 6}" y="${calendarY - 2}" width="5" height="${arena.height * stride}" rx="2" fill="${theme.accent}" opacity="0">
+    emit(`<rect id="rebuild-sweep" x="${calendarX - 6}" y="${calendarY - 2}" width="5" height="${arena.height * stride}" rx="2" fill="${effectAccent}" opacity="0">
 ${visibleBetween(replay.restoreTime, duration - 1, duration)}
 ${animation('x', [[0, calendarX - 6], [replay.restoreTime, calendarX - 6], [duration - 1, calendarX + arena.width * stride], [duration, calendarX - 6]], duration, 'linear')}</rect>`);
     emit('</g>');

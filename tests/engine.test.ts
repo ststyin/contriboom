@@ -7,6 +7,8 @@ import { mockContributions } from '../src/fixtures/contributions.ts';
 import type { Fixture } from '../src/fixtures/contributions.ts';
 import type { GameConfig, Position, Replay } from '../src/engine/types.ts';
 import { renderSvg } from '../src/renderer/svg.ts';
+import { THEMES } from '../src/renderer/themes.ts';
+import type { Theme } from '../src/renderer/themes.ts';
 
 describe('blast geometry', () => {
   const arena = createArena(mockContributions(42, 'empty'));
@@ -255,7 +257,23 @@ describe('SVG output', () => {
   it('renders a static alternative and distinct themes from the same replay', () => {
     const svg = renderSvg(replay, { animated: false });
     expect(svg).not.toMatch(/<animate|<text\b|<defs>|id="player"/);
+    expect(renderSvg(replay)).toBe(renderSvg(replay, { theme: 'github' }));
+    expect(svg).toBe(renderSvg(replay, { theme: 'github', animated: false }));
+    for (const color of ['#eff2f5', '#aceebb', '#4ac26b', '#2da44e', '#116329']) expect(svg).toContain(color);
     expect(renderSvg(replay, { theme: 'dark' })).toContain('#202b36');
     expect(renderSvg(replay, { theme: 'light' })).toContain('#e4e9dd');
+  });
+  it('changes only tile fills for every added palette, preserving artwork and animation', () => {
+    for (const theme of Object.keys(THEMES) as Theme[]) {
+      if (theme === 'dark' || theme === 'light') continue;
+      for (const animated of [true, false]) {
+        const original = renderSvg(replay, { theme: 'light', animated });
+        const expected = original.replace(/fill="(#[a-f0-9]+)"/gi, (attribute, color: string) => {
+          const level = THEMES.light.colors.indexOf(color);
+          return level < 0 ? attribute : `fill="${THEMES[theme].colors[level]}"`;
+        });
+        expect(renderSvg(replay, { theme, animated })).toBe(expected);
+      }
+    }
   });
 });

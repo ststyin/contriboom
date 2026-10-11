@@ -7,6 +7,8 @@ import { mockContributions } from './fixtures/contributions.ts';
 import type { Fixture } from './fixtures/contributions.ts';
 import type { Contribution } from './engine/types.ts';
 import { renderSvg } from './renderer/svg.ts';
+import { DEFAULT_THEME, THEMES } from './renderer/themes.ts';
+import type { Theme } from './renderer/themes.ts';
 import { getGitHubContributions } from './github/client.ts';
 
 async function main(): Promise<void> {
@@ -21,6 +23,7 @@ async function main(): Promise<void> {
     refresh: { type: 'boolean', default: false },
     input: { type: 'string' },
     output: { type: 'string', default: 'artifacts' },
+    theme: { type: 'string', default: DEFAULT_THEME },
     mode: { type: 'string', default: 'clear' },
     'max-bombs': { type: 'string', default: '5' },
     range: { type: 'string', default: '3' },
@@ -33,14 +36,18 @@ async function main(): Promise<void> {
       '                    [--cache-dir .cache/contriboom] [--cache-ttl 3600] [--no-cache]\n' +
       'npm run generate -- [--seed 42] [--fixture demo|empty|full|sparse]\n' +
       '                    [--input contributions.json] [--output artifacts]\n' +
+      '                    [--theme <name>]\n' +
       '                    [--mode clear|preview] [--range 3]\n' +
       '                    [--max-bombs 5] [--duration 22] (preview only)\n\n' +
       'GitHub: set GITHUB_TOKEN or GH_TOKEN. Default period is the past year.\n' +
       'CONTRIBOOM_USERNAME supplies a default account; --input or --fixture overrides it.\n' +
+      `Themes: ${Object.keys(THEMES).join(', ')}. Default: ${DEFAULT_THEME}.\n` +
       'JSON input: complete chronological weeks of { date, count, level } days (up to 54 weeks).\n' +
       'Local JSON and fixtures work offline without a token.');
     return;
   }
+  if (!Object.hasOwn(THEMES, values.theme!)) throw new Error(`Unknown theme. Choose ${Object.keys(THEMES).join(', ')}.`);
+  const theme = values.theme as Theme;
   const fixture = values.fixture ?? 'demo';
   if (!['demo', 'empty', 'full', 'sparse'].includes(fixture)) throw new Error('Unknown fixture.');
   if (!['clear', 'preview'].includes(values.mode!)) throw new Error('Unknown mode. Choose clear or preview.');
@@ -75,10 +82,10 @@ async function main(): Promise<void> {
   const output = path.resolve(values.output!);
   await mkdir(output, { recursive: true });
   await Promise.all([
-    writeFile(path.join(output, 'game.svg'), renderSvg(replay, { label })),
+    writeFile(path.join(output, 'game.svg'), renderSvg(replay, { theme, label })),
     writeFile(path.join(output, 'game-dark.svg'), renderSvg(replay, { theme: 'dark', label })),
     writeFile(path.join(output, 'game-light.svg'), renderSvg(replay, { theme: 'light', label })),
-    writeFile(path.join(output, 'game-static.svg'), renderSvg(replay, { animated: false, label })),
+    writeFile(path.join(output, 'game-static.svg'), renderSvg(replay, { theme, animated: false, label })),
     writeFile(path.join(output, 'contributions.json'), JSON.stringify(data, null, 2) + '\n'),
     writeFile(path.join(output, 'replay.json'), JSON.stringify(replay, null, 2) + '\n'),
   ]);

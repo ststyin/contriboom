@@ -61,17 +61,20 @@ afterEach(async () => {
 describe('GitHub Action entry point', () => {
   it('generates in the caller workspace, forwards settings and emits usable absolute paths', async () => {
     const context = await workspace();
-    const { stdout } = await context.run();
+    const { stdout } = await context.run({ CONTRIBOOM_INPUT_THEME: 'lavender' });
     const outputs = Object.fromEntries((await readFile(context.outputFile, 'utf8')).trim().split('\n').map(line => {
       const separator = line.indexOf('=');
       return [line.slice(0, separator), line.slice(separator + 1)];
     }));
     expect(outputs['output-dir']).toBe(path.join(context.directory, 'images with spaces/contriboom'));
+    expect(Object.keys(outputs).sort()).toEqual(['output-dir', 'svg', 'svg-dark', 'svg-light', 'svg-static']);
     for (const name of ['svg', 'svg-dark', 'svg-light', 'svg-static']) {
       expect(path.isAbsolute(outputs[name]!)).toBe(true);
       expect(await readFile(outputs[name]!, 'utf8')).toContain('<svg');
     }
     expect(await readFile(outputs['svg-static']!, 'utf8')).not.toContain('<animate');
+    expect(await readFile(outputs.svg!, 'utf8')).toContain('#F2EFF5');
+    expect(await readFile(outputs['svg-static']!, 'utf8')).toContain('#F2EFF5');
     const replay = JSON.parse(await readFile(path.join(outputs['output-dir']!, 'replay.json'), 'utf8'));
     expect(replay.config).toMatchObject({ mode: 'preview', seed: 71, explosionRange: 2, maxBombs: 2, maxDuration: 12 });
     expect(replay.duration).toBeLessThanOrEqual(12);
@@ -80,13 +83,19 @@ describe('GitHub Action entry point', () => {
     expect(await readdir(context.directory)).not.toContain('.cache');
   });
 
-  it('defaults to a complete clear and the artifacts directory', async () => {
+  it('defaults to a complete clear, the GitHub palette and the artifacts directory', async () => {
     const context = await workspace();
     await context.run({ CONTRIBOOM_INPUT_OUTPUT: '', CONTRIBOOM_INPUT_MODE: '', CONTRIBOOM_INPUT_SEED: '' });
     const replay = JSON.parse(await readFile(path.join(context.directory, 'artifacts/replay.json'), 'utf8'));
     expect(replay.stats.remaining).toBe(0);
     expect(replay.stats.destroyed).toBe(replay.stats.totalBoxes);
     expect(replay.config).toMatchObject({ mode: 'clear', seed: 42 });
+    const output = path.join(context.directory, 'artifacts');
+    for (const name of ['game.svg', 'game-static.svg']) {
+      const svg = await readFile(path.join(output, name), 'utf8');
+      expect(svg).toContain('#eff2f5');
+      expect(svg).toContain('#aceebb');
+    }
   });
 
   it('fails without output paths when required credentials or generation fail', async () => {

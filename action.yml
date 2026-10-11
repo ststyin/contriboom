@@ -21,6 +21,9 @@ inputs:
   mode:
     description: clear requires a safe full clear; preview limits bombs and duration.
     default: clear
+  theme:
+    description: Tile palette for game.svg and game-static.svg (github, light, dark, ocean, sakura, cyberpunk, sunset, nord, mocha, mint, sky, lavender, peach, sand, rose).
+    default: github
   seed:
     description: Seed for reproducible simulations.
     default: '42'
@@ -39,7 +42,7 @@ outputs:
     description: Absolute path to the generated directory.
     value: ${{ steps.generate.outputs.output-dir }}
   svg:
-    description: Absolute path to the default light animation.
+    description: Absolute path to the animation using the selected tile palette.
     value: ${{ steps.generate.outputs.svg }}
   svg-dark:
     description: Absolute path to the dark animation.
@@ -48,7 +51,7 @@ outputs:
     description: Absolute path to the light animation.
     value: ${{ steps.generate.outputs.svg-light }}
   svg-static:
-    description: Absolute path to the static light image.
+    description: Absolute path to the static image using the selected tile palette.
     value: ${{ steps.generate.outputs.svg-static }}
 
 runs:
@@ -69,6 +72,7 @@ runs:
         CONTRIBOOM_INPUT_YEAR: ${{ inputs.year }}
         CONTRIBOOM_INPUT_OUTPUT: ${{ inputs.output-dir }}
         CONTRIBOOM_INPUT_MODE: ${{ inputs.mode }}
+        CONTRIBOOM_INPUT_THEME: ${{ inputs.theme }}
         CONTRIBOOM_INPUT_SEED: ${{ inputs.seed }}
         CONTRIBOOM_INPUT_RANGE: ${{ inputs.range }}
         CONTRIBOOM_INPUT_MAX_BOMBS: ${{ inputs.max-bombs }}

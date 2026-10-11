@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { appendFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { DEFAULT_THEME } from '../src/renderer/themes.ts';
 
 async function main(): Promise<void> {
   const username = process.env.CONTRIBOOM_INPUT_USERNAME?.trim();
@@ -19,7 +20,7 @@ async function main(): Promise<void> {
   }
   const args = [fileURLToPath(new URL('../src/cli.ts', import.meta.url)), '--username', username, '--output', output, '--no-cache'];
   for (const [input, flag, fallback] of [
-    ['YEAR', 'year', ''], ['MODE', 'mode', 'clear'], ['SEED', 'seed', '42'],
+    ['YEAR', 'year', ''], ['MODE', 'mode', 'clear'], ['SEED', 'seed', '42'], ['THEME', 'theme', DEFAULT_THEME],
     ['RANGE', 'range', '3'], ['MAX_BOMBS', 'max-bombs', '5'], ['DURATION', 'duration', '22'],
   ] as const) {
     const value = process.env[`CONTRIBOOM_INPUT_${input}`] ?? fallback;

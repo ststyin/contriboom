@@ -30,10 +30,10 @@ describe('generation CLI', () => {
       'contributions.json', 'game-dark.svg', 'game-light.svg', 'game-static.svg', 'game.svg', 'replay.json',
     ]);
     const svg = await readFile(path.join(output, 'game.svg'), 'utf8');
-    expect(svg).toContain('#e4e9dd');
+    expect(svg).toContain('#eff2f5');
     expect(svg).not.toMatch(/<text\b|Contriboom|Make your contributions/);
     expect(svg).not.toMatch(/M1|FULL CLEAR|DEMO DATA|SHORT PREVIEW|blocks cleared/);
-    expect(await readFile(path.join(output, 'game-light.svg'), 'utf8')).toBe(svg);
+    expect(await readFile(path.join(output, 'game-static.svg'), 'utf8')).toContain('#eff2f5');
   });
 
   it('reuses exported contributions as local input with identical replay and SVG', async () => {
@@ -44,6 +44,28 @@ describe('generation CLI', () => {
     for (const name of ['replay.json', 'game.svg']) {
       expect(await readFile(path.join(second, name), 'utf8')).toBe(await readFile(path.join(first, name), 'utf8'));
     }
+  });
+
+  it.each([
+    ['mint', '#EDF3F0'], ['light', '#e4e9dd'], ['dark', '#202b36'],
+  ])('applies the selected %s palette to animated and static output', async (theme, floor) => {
+    const output = await directory();
+    await run(['--fixture', 'sparse', '--mode', 'preview', '--theme', theme, '--output', output]);
+    for (const name of ['game.svg', 'game-static.svg']) {
+      const svg = await readFile(path.join(output, name), 'utf8');
+      expect(svg).toContain(floor);
+    }
+    expect(await readFile(path.join(output, 'game-static.svg'), 'utf8')).not.toContain('<animate');
+  });
+
+  it('rejects unknown palettes before reading input or writing artifacts', async () => {
+    const output = await directory();
+    for (const theme of ['unknown', '__proto__', 'toString']) {
+      await expect(run(['--theme', theme, '--input', 'missing.json', '--output', output])).rejects.toMatchObject({
+        stderr: expect.stringContaining('Unknown theme.'),
+      });
+    }
+    expect(await readdir(output)).toEqual([]);
   });
 
   it('rejects conflicting sources and a year without an account before producing artifacts', async () => {
