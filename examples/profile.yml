@@ -33,16 +33,15 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           output-dir: images/contriboom
           mode: clear
+          # theme: mint
 
       - name: Commit updated images
         shell: bash
         env:
           SVG: ${{ steps.contriboom.outputs.svg }}
-          SVG_DARK: ${{ steps.contriboom.outputs.svg-dark }}
-          SVG_LIGHT: ${{ steps.contriboom.outputs.svg-light }}
           SVG_STATIC: ${{ steps.contriboom.outputs.svg-static }}
         run: |
-          git add -f -- "$SVG" "$SVG_DARK" "$SVG_LIGHT" "$SVG_STATIC"
+          git add -f -- "$SVG" "$SVG_STATIC"
           if git diff --cached --quiet; then
             echo "Contribution images are unchanged."
             exit 0

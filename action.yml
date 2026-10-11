@@ -44,12 +44,6 @@ outputs:
   svg:
     description: Absolute path to the animation using the selected tile palette.
     value: ${{ steps.generate.outputs.svg }}
-  svg-dark:
-    description: Absolute path to the dark animation.
-    value: ${{ steps.generate.outputs.svg-dark }}
-  svg-light:
-    description: Absolute path to the light animation.
-    value: ${{ steps.generate.outputs.svg-light }}
   svg-static:
     description: Absolute path to the static image using the selected tile palette.
     value: ${{ steps.generate.outputs.svg-static }}

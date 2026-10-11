@@ -38,8 +38,6 @@ async function main(): Promise<void> {
   const outputs = {
     'output-dir': output,
     svg: path.join(output, 'game.svg'),
-    'svg-dark': path.join(output, 'game-dark.svg'),
-    'svg-light': path.join(output, 'game-light.svg'),
     'svg-static': path.join(output, 'game-static.svg'),
   };
   await appendFile(outputFile, Object.entries(outputs).map(([name, value]) => `${name}=${value}\n`).join(''));

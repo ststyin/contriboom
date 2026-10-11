@@ -27,7 +27,7 @@ describe('generation CLI', () => {
     const output = await directory();
     await run(['--fixture', 'empty', '--output', output], { ...environment, CONTRIBOOM_USERNAME: 'octocat' });
     expect((await readdir(output)).sort()).toEqual([
-      'contributions.json', 'game-dark.svg', 'game-light.svg', 'game-static.svg', 'game.svg', 'replay.json',
+      'contributions.json', 'game-static.svg', 'game.svg', 'replay.json',
     ]);
     const svg = await readFile(path.join(output, 'game.svg'), 'utf8');
     expect(svg).toContain('#eff2f5');
@@ -48,9 +48,10 @@ describe('generation CLI', () => {
 
   it.each([
     ['mint', '#EDF3F0'], ['light', '#e4e9dd'], ['dark', '#202b36'],
-  ])('applies the selected %s palette to animated and static output', async (theme, floor) => {
+  ])('generates only the selected %s palette in animated and static output', async (theme, floor) => {
     const output = await directory();
     await run(['--fixture', 'sparse', '--mode', 'preview', '--theme', theme, '--output', output]);
+    expect((await readdir(output)).filter(name => name.endsWith('.svg')).sort()).toEqual(['game-static.svg', 'game.svg']);
     for (const name of ['game.svg', 'game-static.svg']) {
       const svg = await readFile(path.join(output, name), 'utf8');
       expect(svg).toContain(floor);

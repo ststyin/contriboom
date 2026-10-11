@@ -67,14 +67,15 @@ describe('GitHub Action entry point', () => {
       return [line.slice(0, separator), line.slice(separator + 1)];
     }));
     expect(outputs['output-dir']).toBe(path.join(context.directory, 'images with spaces/contriboom'));
-    expect(Object.keys(outputs).sort()).toEqual(['output-dir', 'svg', 'svg-dark', 'svg-light', 'svg-static']);
-    for (const name of ['svg', 'svg-dark', 'svg-light', 'svg-static']) {
+    expect(Object.keys(outputs).sort()).toEqual(['output-dir', 'svg', 'svg-static']);
+    for (const name of ['svg', 'svg-static']) {
       expect(path.isAbsolute(outputs[name]!)).toBe(true);
       expect(await readFile(outputs[name]!, 'utf8')).toContain('<svg');
     }
     expect(await readFile(outputs['svg-static']!, 'utf8')).not.toContain('<animate');
     expect(await readFile(outputs.svg!, 'utf8')).toContain('#F2EFF5');
     expect(await readFile(outputs['svg-static']!, 'utf8')).toContain('#F2EFF5');
+    expect((await readdir(outputs['output-dir']!)).filter(name => name.endsWith('.svg')).sort()).toEqual(['game-static.svg', 'game.svg']);
     const replay = JSON.parse(await readFile(path.join(outputs['output-dir']!, 'replay.json'), 'utf8'));
     expect(replay.config).toMatchObject({ mode: 'preview', seed: 71, explosionRange: 2, maxBombs: 2, maxDuration: 12 });
     expect(replay.duration).toBeLessThanOrEqual(12);
@@ -96,6 +97,7 @@ describe('GitHub Action entry point', () => {
       expect(svg).toContain('#eff2f5');
       expect(svg).toContain('#aceebb');
     }
+    expect((await readdir(output)).filter(name => name.endsWith('.svg')).sort()).toEqual(['game-static.svg', 'game.svg']);
   });
 
   it('fails without output paths when required credentials or generation fail', async () => {
@@ -155,14 +157,12 @@ describe('profile publication example', () => {
       .split('\n').map(line => line.slice(10)).join('\n');
     const publish = () => execute('bash', ['-e', '-o', 'pipefail', '-c', script], {
       cwd: repository, env: { ...process.env,
-        SVG: path.join(directory, 'game.svg'), SVG_DARK: path.join(directory, 'game-dark.svg'),
-        SVG_LIGHT: path.join(directory, 'game-light.svg'), SVG_STATIC: path.join(directory, 'game-static.svg'),
+        SVG: path.join(directory, 'game.svg'), SVG_STATIC: path.join(directory, 'game-static.svg'),
       },
     });
     await publish();
     const head = (await git(['rev-parse', 'HEAD'])).stdout;
     expect((await git(['show', '--pretty=format:', '--name-only', 'HEAD'])).stdout.trim().split('\n')).toEqual([
-      'images/contriboom/game-dark.svg', 'images/contriboom/game-light.svg',
       'images/contriboom/game-static.svg', 'images/contriboom/game.svg',
     ]);
     expect(await readFile(path.join(repository, 'README.md'), 'utf8')).toBe('My existing profile\n');

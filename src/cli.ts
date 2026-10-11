@@ -83,8 +83,6 @@ async function main(): Promise<void> {
   await mkdir(output, { recursive: true });
   await Promise.all([
     writeFile(path.join(output, 'game.svg'), renderSvg(replay, { theme, label })),
-    writeFile(path.join(output, 'game-dark.svg'), renderSvg(replay, { theme: 'dark', label })),
-    writeFile(path.join(output, 'game-light.svg'), renderSvg(replay, { theme: 'light', label })),
     writeFile(path.join(output, 'game-static.svg'), renderSvg(replay, { theme, animated: false, label })),
     writeFile(path.join(output, 'contributions.json'), JSON.stringify(data, null, 2) + '\n'),
     writeFile(path.join(output, 'replay.json'), JSON.stringify(replay, null, 2) + '\n'),
