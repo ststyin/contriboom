@@ -66,11 +66,15 @@ describe('GitHub calendar normalization', () => {
     expect(calendar.contributions.find(day => day.date === '2026-10-11')).toEqual({ date: '2026-10-11', count: 0, level: 0 });
   });
 
-  it('uses UTC for rolling periods and handles a leap-day anniversary', () => {
+  it('uses UTC and keeps rolling periods at 365 inclusive days across leap years', () => {
     expect(calendarRange(undefined, NOW)).toEqual({
-      from: '2025-10-10T00:00:00.000Z', to: '2026-10-10T23:59:59.999Z', endDate: '2026-10-10',
+      from: '2025-10-11T00:00:00.000Z', to: '2026-10-10T23:59:59.999Z', endDate: '2026-10-10',
     });
-    expect(calendarRange(undefined, new Date('2024-02-29T10:00:00Z')).from).toBe('2023-03-01T00:00:00.000Z');
+    expect(calendarRange(undefined, new Date('2024-02-29T10:00:00Z')).from).toBe('2023-03-02T00:00:00.000Z');
+    for (const now of ['2024-02-29T10:00:00Z', '2024-03-01T10:00:00Z', '2025-02-28T10:00:00Z', '2026-10-11T04:22:34Z']) {
+      const range = calendarRange(undefined, new Date(now));
+      expect((Date.parse(range.to.slice(0, 10)) - Date.parse(range.from)) / DAY + 1).toBe(365);
+    }
     for (const year of [2007, 2027, 2025.5, NaN]) expect(() => calendarRange(year, NOW)).toThrow(/Year/);
   });
 
@@ -131,6 +135,17 @@ describe('GitHub requests and cache', () => {
     expect(body.variables).toEqual({ login: 'octocat', from: '2025-01-01T00:00:00.000Z', to: '2025-12-31T23:59:59.999Z' });
     expect(result.source).toBe('github');
     expect(result.width).toBe(53);
+  });
+
+  it('accepts the complete 365-day rolling calendar returned by GitHub, including today', async () => {
+    const user = userCalendar('2025-10-11', '2026-10-10');
+    fetchMock.mockResolvedValueOnce(Response.json({ data: { user } }));
+    const result = await getGitHubContributions({ ...options, year: undefined });
+    const body = JSON.parse(fetchMock.mock.calls[0]![1].body);
+    expect(body.variables).toEqual({ login: 'octocat', from: '2025-10-11T00:00:00.000Z', to: '2026-10-10T23:59:59.999Z' });
+    expect(result.range.from).toBe('2025-10-11T00:00:00.000Z');
+    expect(result.contributions.reduce((total, day) => total + day.count, 0)).toBe(user.contributionsCollection.contributionCalendar.totalContributions);
+    expect(result.contributions.find(day => day.date === '2026-10-10')?.count).toBeGreaterThan(0);
   });
 
   it('uses environment tokens and fails before requesting if the token is missing', async () => {

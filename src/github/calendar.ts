@@ -36,8 +36,9 @@ export function calendarRange(year: number | undefined, now: Date): CalendarRang
     throw new Error(`Year must be between 2008 and ${currentYear}.`);
   }
   const today = Date.UTC(currentYear, now.getUTCMonth(), now.getUTCDate());
+  // Both calendar endpoints are inclusive; keep the rolling window at 365 days.
   const from = year === undefined
-    ? Date.UTC(currentYear - 1, now.getUTCMonth(), now.getUTCDate())
+    ? today - 364 * DAY
     : Date.UTC(year, 0, 1);
   const end = year === undefined ? today : Date.UTC(year, 11, 31);
   const to = Math.min(end, today);
