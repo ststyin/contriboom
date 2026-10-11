@@ -34,9 +34,9 @@ jobs:
           output-dir: images/contriboom
           mode: clear
           # theme: mint
-          # block-damage: fade
+          # block-damage: instant # Default: fade (lower the block level on each hit).
           # range-mode: previous-week
-          # range-max: '6'
+          # range: '4' # Fixed distance or adaptive maximum (1–10).
           # player-icon: assets/bomber.png
           # player-icon-trim: none # Default: auto (trim transparent or near-white margins).
 

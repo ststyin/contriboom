@@ -4,7 +4,7 @@ import type { RangeOptions } from '../src/engine/range.ts';
 import type { Contribution } from '../src/engine/types.ts';
 
 const DAY = 86_400_000;
-const defaults: RangeOptions = { mode: 'fixed', fixedRange: 3, maxRange: 6 };
+const defaults: RangeOptions = { mode: 'fixed', range: 4 };
 function calendar(reference: string, counts: Record<string, number> = {}): Contribution[] {
   return Array.from({ length: 35 }, (_, index) => {
     const date = new Date(Date.parse(reference) - (34 - index) * DAY).toISOString().slice(0, 10);
@@ -14,16 +14,15 @@ function calendar(reference: string, counts: Record<string, number> = {}): Contr
 }
 
 describe('explosion range selection', () => {
-  it('keeps fixed values predictable and applies the configurable cap', () => {
-    expect(resolveExplosionRange([], defaults)).toEqual({ mode: 'fixed', range: 3, maxRange: 6 });
-    expect(resolveExplosionRange([], { ...defaults, fixedRange: 10 }).range).toBe(6);
-    expect(resolveExplosionRange([], { ...defaults, fixedRange: 10, maxRange: 10 }).range).toBe(10);
-    expect(resolveExplosionRange([], { ...defaults, maxRange: 1 }).range).toBe(1);
+  it('uses the configured range directly in fixed mode', () => {
+    expect(resolveExplosionRange([], defaults)).toEqual({ mode: 'fixed', range: 4, configuredRange: 4 });
+    expect(resolveExplosionRange([], { ...defaults, range: 10 }).range).toBe(10);
+    expect(resolveExplosionRange([], { ...defaults, range: 1 }).range).toBe(1);
   });
   it('uses yesterday rather than today or padded future calendar days', () => {
     const days = calendar('2024-03-03', { '2024-02-29': 4, '2024-03-01': 100, '2024-03-02': 200 });
     expect(resolveExplosionRange(days, { ...defaults, mode: 'previous-day', referenceDate: '2024-03-01' })).toEqual({
-      mode: 'previous-day', range: 4, maxRange: 6, average: 4, referenceDate: '2024-03-01', from: '2024-02-29', to: '2024-02-29',
+      mode: 'previous-day', range: 4, configuredRange: 4, average: 4, referenceDate: '2024-03-01', from: '2024-02-29', to: '2024-02-29',
     });
   });
   it('uses a full seven-day denominator, rounds up fractional averages, and excludes older days', () => {
@@ -38,13 +37,13 @@ describe('explosion range selection', () => {
   it('keeps zero or missing activity at one cell and caps heavy activity', () => {
     expect(resolveExplosionRange([], { ...defaults, mode: 'previous-week', referenceDate: '2024-03-01' }).range).toBe(1);
     const days = calendar('2024-03-01', { '2024-02-29': 10000 });
-    expect(resolveExplosionRange(days, { ...defaults, mode: 'previous-day' }).range).toBe(6);
-    expect(resolveExplosionRange(days, { ...defaults, mode: 'previous-day', maxRange: 3 }).range).toBe(3);
+    expect(resolveExplosionRange(days, { ...defaults, mode: 'previous-day' }).range).toBe(4);
+    for (const range of [1, 3, 10]) expect(resolveExplosionRange(days, { ...defaults, mode: 'previous-day', range }).range).toBe(range);
   });
   it('rejects unknown modes, invalid limits, and impossible reference dates', () => {
     for (const options of [
-      { ...defaults, mode: 'unknown' }, { ...defaults, fixedRange: 0 }, { ...defaults, fixedRange: 11 },
-      { ...defaults, maxRange: 0 }, { ...defaults, maxRange: 11 }, { ...defaults, maxRange: 2.5 },
+      { ...defaults, mode: 'unknown' }, { ...defaults, range: 0 }, { ...defaults, range: 11 },
+      { ...defaults, range: 2.5 }, { ...defaults, range: NaN },
     ]) expect(() => validateRangeOptions(options as RangeOptions)).toThrow();
     for (const referenceDate of ['2024-02-30', 'invalid', '2024-03-01T12:00:00Z']) {
       expect(() => resolveExplosionRange([], { ...defaults, mode: 'previous-day', referenceDate })).toThrow('valid reference date');

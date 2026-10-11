@@ -170,10 +170,10 @@ describe('simulation invariants', () => {
   it('respects different blast ranges and shorter round budgets', () => {
     for (const range of [1, 2, 4, 8]) verifyRound('demo', range, { explosionRange: range, maxDuration: 12 });
   });
-  it('caps fixed ranges at six by default and honors an explicit upper limit', () => {
-    expect(verifyRound('sparse', 42, { explosionRange: 10 }).config.explosionRange).toBe(6);
-    expect(verifyRound('sparse', 42, { explosionRange: 10, explosionRangeMax: 10 }).config.explosionRange).toBe(10);
-    expect(verifyRound('sparse', 42, { explosionRangeMax: 1, blockDamage: 'fade' }).config.explosionRange).toBe(1);
+  it('defaults to range four with fading blocks and honors explicit fixed ranges', () => {
+    expect(verifyRound('sparse', 42).config).toMatchObject({ explosionRange: 4, blockDamage: 'fade' });
+    expect(verifyRound('sparse', 42, { explosionRange: 10 }).config.explosionRange).toBe(10);
+    expect(verifyRound('sparse', 42, { explosionRange: 1 }).config.explosionRange).toBe(1);
   });
   it('handles zero bombs and an extremely slow patrol without exceeding the budget', () => {
     verifyRound('empty', 42, { maxBombs: 0, stepDuration: 100 });
@@ -209,9 +209,12 @@ describe('simulation invariants', () => {
     const data = mockContributions(42, 'empty');
     data[7 * 7 + 3] = { ...data[7 * 7 + 3]!, count: 12, level: 4 };
     const arena = createArena(data);
-    const full = simulate(arena, { blockDamage: 'fade' });
+    const full = simulate(arena);
     expect(full.stats).toMatchObject({ bombs: 4, destroyed: 1, remaining: 0 });
     expect(full.events.flatMap(event => event.type === 'explode' ? event.damaged.map(hit => [hit.fromLevel, hit.toLevel]) : [])).toEqual([[4, 3], [3, 2], [2, 1], [1, 0]]);
+    const instant = simulate(arena, { blockDamage: 'instant' });
+    expect(instant.stats).toMatchObject({ bombs: 1, destroyed: 1, remaining: 0 });
+    expect(instant.events.flatMap(event => event.type === 'explode' ? event.damaged.map(hit => [hit.fromLevel, hit.toLevel]) : [])).toEqual([[4, 0]]);
     const partial = simulate(arena, { mode: 'preview', blockDamage: 'fade', maxBombs: 1 });
     expect(partial.stats).toMatchObject({ bombs: 1, destroyed: 0, remaining: 1 });
     expect(partial.events.filter(event => event.type === 'restore').flatMap(event => event.cells.map(key))).toEqual(['7,3']);
@@ -240,7 +243,7 @@ describe('input validation', () => {
   });
   it('rejects unsafe or nonsensical configuration', () => {
     const arena = createArena(mockContributions());
-    for (const options of [{ maxBombs: -1 }, { seed: NaN }, { explosionRange: 0 }, { explosionRangeMax: 0 }, { explosionRangeMax: 11 }, { fuse: Infinity }, { stepDuration: 0 }, { maxDuration: 2 }]) {
+    for (const options of [{ maxBombs: -1 }, { seed: NaN }, { explosionRange: 0 }, { explosionRange: 11 }, { explosionRange: 2.5 }, { fuse: Infinity }, { stepDuration: 0 }, { maxDuration: 2 }]) {
       expect(() => simulate(arena, options)).toThrow();
     }
   });
@@ -323,9 +326,9 @@ describe('SVG output', () => {
       if (theme === 'dark' || theme === 'light') continue;
       for (const animated of [true, false]) {
         const original = renderSvg(replay, { theme: 'light', animated });
-        const expected = original.replace(/fill="(#[a-f0-9]+)"/gi, (attribute, color: string) => {
+        const expected = original.replace(/#[a-f0-9]{6}\b/gi, (color: string) => {
           const level = THEMES.light.colors.indexOf(color);
-          return level < 0 ? attribute : `fill="${THEMES[theme].colors[level]}"`;
+          return level < 0 ? color : THEMES[theme].colors[level]!;
         });
         expect(renderSvg(replay, { theme, animated })).toBe(expected);
       }

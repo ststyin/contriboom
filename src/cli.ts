@@ -2,8 +2,8 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { parseArgs } from 'node:util';
 import path from 'node:path';
 import { createArena } from './engine/map.ts';
-import { simulate } from './engine/simulator.ts';
-import { DEFAULT_RANGE_MAX, resolveExplosionRange, validateRangeOptions } from './engine/range.ts';
+import { DEFAULT_CONFIG, simulate } from './engine/simulator.ts';
+import { DEFAULT_RANGE, resolveExplosionRange, validateRangeOptions } from './engine/range.ts';
 import type { RangeMode } from './engine/range.ts';
 import { mockContributions } from './fixtures/contributions.ts';
 import type { Fixture } from './fixtures/contributions.ts';
@@ -32,10 +32,9 @@ async function main(): Promise<void> {
     'player-icon-trim': { type: 'string', default: 'auto' },
     mode: { type: 'string', default: 'clear' },
     'max-bombs': { type: 'string', default: '5' },
-    range: { type: 'string', default: '3' },
+    range: { type: 'string', default: String(DEFAULT_RANGE) },
     'range-mode': { type: 'string', default: 'fixed' },
-    'range-max': { type: 'string', default: String(DEFAULT_RANGE_MAX) },
-    'block-damage': { type: 'string', default: 'instant' },
+    'block-damage': { type: 'string', default: DEFAULT_CONFIG.blockDamage },
     duration: { type: 'string', default: '22' },
     help: { type: 'boolean', default: false },
   } });
@@ -47,8 +46,8 @@ async function main(): Promise<void> {
       '                    [--input contributions.json] [--output artifacts]\n' +
       '                    [--theme <name>] [--player-icon path/to/image.png]\n' +
       '                    [--player-icon-trim auto|none]\n' +
-      '                    [--mode clear|preview] [--range 3]\n' +
-      '                    [--range-mode fixed|previous-day|previous-week|previous-month] [--range-max 6]\n' +
+      `                    [--mode clear|preview] [--range ${DEFAULT_RANGE}]\n` +
+      '                    [--range-mode fixed|previous-day|previous-week|previous-month]\n' +
       '                    [--block-damage instant|fade]\n' +
       '                    [--max-bombs 5] [--duration 22] (preview only)\n\n' +
       'GitHub: set GITHUB_TOKEN or GH_TOKEN. Default period is the past year.\n' +
@@ -56,7 +55,8 @@ async function main(): Promise<void> {
       `Themes: ${Object.keys(THEMES).join(', ')}. Default: ${DEFAULT_THEME}.\n` +
       'Player icon: local PNG, JPEG, GIF, WebP, or SVG, up to 2 MiB; defaults to the robot.\n' +
       'Icon margins: auto trims transparent or near-white borders; none preserves the full canvas.\n' +
-      'Explosion range: fixed value or ceiling of previous activity (7/30-day averages), capped by range-max (1–10).\n' +
+      `Explosion range: range (1–10, default ${DEFAULT_RANGE}) is the fixed value or the cap for adaptive activity (7/30-day averages, rounded up).\n` +
+      `Block damage: ${DEFAULT_CONFIG.blockDamage} by default; instant destroys blocks on one hit.\n` +
       'JSON input: complete chronological weeks of { date, count, level } days (up to 54 weeks).\n' +
       'Local JSON and fixtures work offline without a token.');
     return;
@@ -64,7 +64,7 @@ async function main(): Promise<void> {
   if (!Object.hasOwn(THEMES, values.theme!)) throw new Error(`Unknown theme. Choose ${Object.keys(THEMES).join(', ')}.`);
   if (!['auto', 'none'].includes(values['player-icon-trim']!)) throw new Error('Unknown player-icon-trim. Choose auto or none.');
   if (!['instant', 'fade'].includes(values['block-damage']!)) throw new Error('Unknown block-damage. Choose instant or fade.');
-  const rangeOptions = { mode: values['range-mode'] as RangeMode, fixedRange: Number(values.range), maxRange: Number(values['range-max']) };
+  const rangeOptions = { mode: values['range-mode'] as RangeMode, range: Number(values.range) };
   validateRangeOptions(rangeOptions);
   const theme = values.theme as Theme;
   const fixture = values.fixture ?? 'demo';
@@ -100,7 +100,7 @@ async function main(): Promise<void> {
   const rangeCalculation = resolveExplosionRange(data, { ...rangeOptions, referenceDate });
   const replay = simulate(arena, {
     seed, mode: values.mode as 'clear' | 'preview', maxBombs: Number(values['max-bombs']),
-    explosionRange: rangeCalculation.range, explosionRangeMax: rangeCalculation.maxRange,
+    explosionRange: rangeCalculation.range,
     blockDamage: values['block-damage'] as BlockDamage, maxDuration: Number(values.duration),
   });
   const output = path.resolve(values.output!);
@@ -112,7 +112,7 @@ async function main(): Promise<void> {
     writeFile(path.join(output, 'replay.json'), JSON.stringify({ ...replay, rangeCalculation }, null, 2) + '\n'),
   ]);
   console.log(`Generated ${output}\n${replay.stats.bombs} bombs · ${replay.stats.destroyed}/${replay.stats.totalBoxes} blocks cleared · ${replay.duration.toFixed(2)}s loop (${replay.config.mode})`);
-  console.log(`Explosion range: ${rangeCalculation.range} (${rangeCalculation.mode}, maximum ${rangeCalculation.maxRange}${rangeCalculation.average === undefined ? '' : `, daily average ${rangeCalculation.average.toFixed(2)} from ${rangeCalculation.from} to ${rangeCalculation.to}`})`);
+  console.log(`Explosion range: ${rangeCalculation.range} (${rangeCalculation.mode}${rangeCalculation.average === undefined ? '' : `, maximum ${rangeCalculation.configuredRange}, daily average ${rangeCalculation.average.toFixed(2)} from ${rangeCalculation.from} to ${rangeCalculation.to}`})`);
 }
 
 main().catch((error: unknown) => {

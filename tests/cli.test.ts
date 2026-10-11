@@ -141,14 +141,18 @@ describe('generation CLI', () => {
     expect(await readdir(output)).toEqual([]);
   });
 
-  it('generates fading blocks and rejects unsupported damage modes before requesting GitHub', async () => {
+  it('defaults to range four and fading blocks, supports instant damage, and rejects unsupported modes', async () => {
     const output = await directory();
-    await run(['--fixture', 'sparse', '--block-damage', 'fade', '--output', output]);
+    await run(['--fixture', 'sparse', '--output', output]);
     const replay = JSON.parse(await readFile(path.join(output, 'replay.json'), 'utf8'));
-    expect(replay.config.blockDamage).toBe('fade');
+    expect(replay.config).toMatchObject({ explosionRange: 4, blockDamage: 'fade' });
     expect(replay.stats.remaining).toBe(0);
     expect(await readFile(path.join(output, 'game.svg'), 'utf8')).toContain('attributeName="fill"');
     expect(await readFile(path.join(output, 'game-static.svg'), 'utf8')).not.toContain('<animate');
+    await run(['--fixture', 'sparse', '--range', '10', '--block-damage', 'instant', '--output', output]);
+    const instant = JSON.parse(await readFile(path.join(output, 'replay.json'), 'utf8'));
+    expect(instant.config).toMatchObject({ explosionRange: 10, blockDamage: 'instant' });
+    expect(await readFile(path.join(output, 'game.svg'), 'utf8')).not.toContain('attributeName="fill"');
     await expect(run(['--username', 'octocat', '--block-damage', 'invalid', '--output', output])).rejects.toMatchObject({ stderr: expect.stringContaining('Unknown block-damage') });
   });
 
@@ -162,12 +166,13 @@ describe('generation CLI', () => {
     const input = path.join(source, 'activity.json');
     await writeFile(input, JSON.stringify(days));
     for (const [mode, range] of [['previous-day', 4], ['previous-week', 4], ['previous-month', 2]] as const) {
-      await run(['--input', input, '--mode', 'preview', '--max-bombs', '0', '--range-mode', mode, '--range-max', '4', '--output', output]);
+      await run(['--input', input, '--mode', 'preview', '--max-bombs', '0', '--range-mode', mode, '--output', output]);
       const replay = JSON.parse(await readFile(path.join(output, 'replay.json'), 'utf8'));
-      expect(replay.config).toMatchObject({ explosionRange: range, explosionRangeMax: 4 });
-      expect(replay.rangeCalculation).toMatchObject({ mode, range, referenceDate: days.at(-1).date });
+      expect(replay.config).toMatchObject({ explosionRange: range });
+      expect(replay.config).not.toHaveProperty('explosionRangeMax');
+      expect(replay.rangeCalculation).toMatchObject({ mode, range, configuredRange: 4, referenceDate: days.at(-1).date });
     }
-    for (const args of [['--range-mode', 'unknown'], ['--range-max', '11'], ['--range', '0']]) {
+    for (const args of [['--range-mode', 'unknown'], ['--range', '11'], ['--range', '0'], ['--range', '2.5'], ['--range-max', '4']]) {
       await expect(run(['--username', 'octocat', ...args, '--output', output])).rejects.toMatchObject({ stderr: expect.stringContaining('range') });
     }
   });

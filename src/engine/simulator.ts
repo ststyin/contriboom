@@ -1,12 +1,12 @@
 import { initialBoxes, key, seededRandom } from './map.ts';
 import { escapePath, reachable } from './pathfinding.ts';
 import { blast } from './bomb.ts';
-import { DEFAULT_RANGE_MAX, RANGE_LIMIT } from './range.ts';
+import { DEFAULT_RANGE, RANGE_LIMIT } from './range.ts';
 import type { Arena, GameConfig, GameEvent, Level, Position, Replay } from './types.ts';
 
 export const DEFAULT_CONFIG: GameConfig = {
   mode: 'clear',
-  seed: 42, maxBombs: 5, explosionRange: 3, explosionRangeMax: DEFAULT_RANGE_MAX, blockDamage: 'instant', stepDuration: 0.15,
+  seed: 42, maxBombs: 5, explosionRange: DEFAULT_RANGE, blockDamage: 'fade', stepDuration: 0.15,
   fuse: 1.5, safetyMargin: 0.3, blastDuration: 0.48, maxDuration: 22,
 };
 
@@ -16,13 +16,11 @@ export function simulate(arena: Arena, options: Partial<GameConfig> = {}): Repla
       !['instant', 'fade'].includes(config.blockDamage) ||
       config.maxBombs < 0 || config.maxBombs > 20 ||
       !Number.isInteger(config.explosionRange) || config.explosionRange < 1 || config.explosionRange > RANGE_LIMIT ||
-      !Number.isInteger(config.explosionRangeMax) || config.explosionRangeMax < 1 || config.explosionRangeMax > RANGE_LIMIT ||
       ![config.stepDuration, config.fuse, config.blastDuration, config.maxDuration].every(n => Number.isFinite(n) && n > 0) ||
       !Number.isFinite(config.safetyMargin) || config.safetyMargin < 0 ||
       config.maxDuration < 8 || config.maxDuration > 60) {
     throw new Error('Invalid simulation configuration. Preview duration must be 8–60 seconds.');
   }
-  config.explosionRange = Math.min(config.explosionRange, config.explosionRangeMax);
   const boxes = initialBoxes(arena);
   const levels = new Map(arena.tiles.filter(tile => tile.count > 0).map(tile => [key(tile), tile.level]));
   const totalBoxes = boxes.size;

@@ -65,7 +65,7 @@ describe('GitHub Action entry point', () => {
     await mkdir(path.join(context.directory, 'my assets'));
     const iconPath = "my assets/player 'icon'.png";
     await writeFile(path.join(context.directory, iconPath), icon);
-    const { stdout } = await context.run({ CONTRIBOOM_INPUT_THEME: 'lavender', CONTRIBOOM_INPUT_PLAYER_ICON: iconPath, CONTRIBOOM_INPUT_BLOCK_DAMAGE: 'fade' });
+    const { stdout } = await context.run({ CONTRIBOOM_INPUT_THEME: 'lavender', CONTRIBOOM_INPUT_PLAYER_ICON: iconPath, CONTRIBOOM_INPUT_BLOCK_DAMAGE: 'instant' });
     const outputs = Object.fromEntries((await readFile(context.outputFile, 'utf8')).trim().split('\n').map(line => {
       const separator = line.indexOf('=');
       return [line.slice(0, separator), line.slice(separator + 1)];
@@ -83,7 +83,7 @@ describe('GitHub Action entry point', () => {
     expect(await readFile(outputs['svg-static']!, 'utf8')).toContain('#F2EFF5');
     expect((await readdir(outputs['output-dir']!)).filter(name => name.endsWith('.svg')).sort()).toEqual(['game-static.svg', 'game.svg']);
     const replay = JSON.parse(await readFile(path.join(outputs['output-dir']!, 'replay.json'), 'utf8'));
-    expect(replay.config).toMatchObject({ mode: 'preview', seed: 71, explosionRange: 2, blockDamage: 'fade', maxBombs: 2, maxDuration: 12 });
+    expect(replay.config).toMatchObject({ mode: 'preview', seed: 71, explosionRange: 2, blockDamage: 'instant', maxBombs: 2, maxDuration: 12 });
     expect(replay.duration).toBeLessThanOrEqual(12);
     expect(replay.stats.bombs).toBeLessThanOrEqual(2);
     expect(stdout).not.toContain(context.env.CONTRIBOOM_INPUT_TOKEN);
@@ -92,11 +92,12 @@ describe('GitHub Action entry point', () => {
 
   it('defaults to a complete clear, the GitHub palette and the artifacts directory', async () => {
     const context = await workspace();
-    await context.run({ CONTRIBOOM_INPUT_OUTPUT: '', CONTRIBOOM_INPUT_MODE: '', CONTRIBOOM_INPUT_SEED: '' });
+    await context.run({ CONTRIBOOM_INPUT_OUTPUT: '', CONTRIBOOM_INPUT_MODE: '', CONTRIBOOM_INPUT_SEED: '', CONTRIBOOM_INPUT_RANGE: '', CONTRIBOOM_INPUT_BLOCK_DAMAGE: '' });
     const replay = JSON.parse(await readFile(path.join(context.directory, 'artifacts/replay.json'), 'utf8'));
     expect(replay.stats.remaining).toBe(0);
     expect(replay.stats.destroyed).toBe(replay.stats.totalBoxes);
-    expect(replay.config).toMatchObject({ mode: 'clear', seed: 42 });
+    expect(replay.config).toMatchObject({ mode: 'clear', seed: 42, explosionRange: 4, blockDamage: 'fade' });
+    expect(replay.config).not.toHaveProperty('explosionRangeMax');
     const output = path.join(context.directory, 'artifacts');
     for (const name of ['game.svg', 'game-static.svg']) {
       const svg = await readFile(path.join(output, name), 'utf8');
@@ -161,11 +162,12 @@ describe('GitHub Action entry point', () => {
     await writeFile(preload, (await readFile(preload, 'utf8')).replace(
       'index % 14 === 0 ? 3 : 0', 'index >= 357 && index < 364 ? 8 : index === 364 ? 200 : 0',
     ));
-    for (const [mode, maxRange, range] of [['previous-day', '6', 6], ['previous-week', '2', 2], ['previous-month', '6', 2]] as const) {
-      const { stdout } = await context.run({ CONTRIBOOM_INPUT_MODE: 'clear', CONTRIBOOM_INPUT_RANGE_MODE: mode, CONTRIBOOM_INPUT_RANGE_MAX: maxRange, CONTRIBOOM_INPUT_BLOCK_DAMAGE: 'fade' });
+    for (const [mode, configuredRange, range] of [['previous-day', '', 4], ['previous-week', '2', 2], ['previous-month', '6', 2]] as const) {
+      const { stdout } = await context.run({ CONTRIBOOM_INPUT_MODE: 'clear', CONTRIBOOM_INPUT_RANGE_MODE: mode, CONTRIBOOM_INPUT_RANGE: configuredRange });
       const replay = JSON.parse(await readFile(path.join(context.directory, 'images with spaces/contriboom/replay.json'), 'utf8'));
-      expect(replay.config).toMatchObject({ explosionRange: range, explosionRangeMax: Number(maxRange), blockDamage: 'fade' });
-      expect(replay.rangeCalculation).toMatchObject({ referenceDate: '2025-12-31', to: '2025-12-30', mode, range });
+      expect(replay.config).toMatchObject({ explosionRange: range, blockDamage: 'fade' });
+      expect(replay.config).not.toHaveProperty('explosionRangeMax');
+      expect(replay.rangeCalculation).toMatchObject({ referenceDate: '2025-12-31', to: '2025-12-30', mode, range, configuredRange: Number(configuredRange || 4) });
       expect(stdout).toContain(`Explosion range: ${range}`);
       expect(await readFile(path.join(context.directory, 'images with spaces/contriboom/game.svg'), 'utf8')).toContain('attributeName="fill"');
     }
