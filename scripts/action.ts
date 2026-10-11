@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { appendFile } from 'node:fs/promises';
+import { appendFile, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DEFAULT_THEME } from '../src/renderer/themes.ts';
@@ -19,6 +19,17 @@ async function main(): Promise<void> {
     throw new Error('output-dir must be a directory inside the workspace.');
   }
   const args = [fileURLToPath(new URL('../src/cli.ts', import.meta.url)), '--username', username, '--output', output, '--no-cache'];
+  const playerIcon = process.env.CONTRIBOOM_INPUT_PLAYER_ICON;
+  if (playerIcon) {
+    const iconPath = await realpath(path.resolve(workspace, playerIcon)).catch(() => {
+      throw new Error(`Cannot read player-icon file: ${playerIcon}`);
+    });
+    const iconRelative = path.relative(await realpath(workspace), iconPath);
+    if (iconRelative === '..' || iconRelative.startsWith(`..${path.sep}`) || path.isAbsolute(iconRelative)) {
+      throw new Error('player-icon must be a file inside the caller workspace.');
+    }
+    args.push('--player-icon', iconPath);
+  }
   for (const [input, flag, fallback] of [
     ['YEAR', 'year', ''], ['MODE', 'mode', 'clear'], ['SEED', 'seed', '42'], ['THEME', 'theme', DEFAULT_THEME],
     ['RANGE', 'range', '3'], ['MAX_BOMBS', 'max-bombs', '5'], ['DURATION', 'duration', '22'],

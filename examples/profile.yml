@@ -34,6 +34,7 @@ jobs:
           output-dir: images/contriboom
           mode: clear
           # theme: mint
+          # player-icon: assets/bomber.png
 
       - name: Commit updated images
         shell: bash

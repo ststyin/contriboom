@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -44,6 +44,48 @@ describe('generation CLI', () => {
     for (const name of ['replay.json', 'game.svg']) {
       expect(await readFile(path.join(second, name), 'utf8')).toBe(await readFile(path.join(first, name), 'utf8'));
     }
+  });
+
+  it.each([
+    ['PNG', 'image/png', Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aS9sAAAAASUVORK5CYII=', 'base64')],
+    ['SVG', 'image/svg+xml', Buffer.from('<?xml version="1.0"?>\n<!-- custom artwork -->\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="red"/></svg>')],
+  ])('embeds a local %s icon and keeps the replay and static calendar unchanged', async (_format, mime, bytes) => {
+    const assets = await directory();
+    const original = await directory();
+    const customized = await directory();
+    // The content determines the image type, regardless of the filename.
+    const icon = path.join(assets, 'my icon.data');
+    await writeFile(icon, bytes);
+    const args = ['--fixture', 'sparse', '--mode', 'preview', '--theme', 'mint'];
+    await run([...args, '--output', original]);
+    await run([...args, '--player-icon', icon, '--output', customized]);
+    const svg = await readFile(path.join(customized, 'game.svg'), 'utf8');
+    expect(svg).toContain(`href="data:${mime};base64,${bytes.toString('base64')}"`);
+    expect(svg).toContain('preserveAspectRatio="xMidYMid meet"');
+    expect(svg).not.toContain('fill="#f4eee0"');
+    expect(svg).not.toContain(icon);
+    expect(svg).toContain('#EDF3F0');
+    for (const name of ['replay.json', 'game-static.svg']) {
+      expect(await readFile(path.join(customized, name), 'utf8')).toBe(await readFile(path.join(original, name), 'utf8'));
+    }
+  });
+
+  it('rejects missing, unsupported, oversized or directory icons before reading contributions or writing output', async () => {
+    const assets = await directory();
+    const output = await directory();
+    await writeFile(path.join(assets, 'invalid.png'), 'This is not an image');
+    await writeFile(path.join(assets, 'large.png'), Buffer.alloc(2 * 1024 * 1024 + 1));
+    for (const [icon, error] of [
+      [path.join(assets, 'missing.png'), 'Cannot read player-icon file'],
+      [path.join(assets, 'invalid.png'), 'Unsupported player-icon image'],
+      [path.join(assets, 'large.png'), 'no larger than 2 MiB'],
+      [assets, 'must be an image file'],
+    ]) {
+      await expect(run(['--player-icon', icon!, '--input', 'missing.json', '--output', output])).rejects.toMatchObject({
+        stderr: expect.stringContaining(error!),
+      });
+    }
+    expect(await readdir(output)).toEqual([]);
   });
 
   it.each([

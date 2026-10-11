@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -61,7 +61,11 @@ afterEach(async () => {
 describe('GitHub Action entry point', () => {
   it('generates in the caller workspace, forwards settings and emits usable absolute paths', async () => {
     const context = await workspace();
-    const { stdout } = await context.run({ CONTRIBOOM_INPUT_THEME: 'lavender' });
+    const icon = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aS9sAAAAASUVORK5CYII=', 'base64');
+    await mkdir(path.join(context.directory, 'my assets'));
+    const iconPath = "my assets/player 'icon'.png";
+    await writeFile(path.join(context.directory, iconPath), icon);
+    const { stdout } = await context.run({ CONTRIBOOM_INPUT_THEME: 'lavender', CONTRIBOOM_INPUT_PLAYER_ICON: iconPath });
     const outputs = Object.fromEntries((await readFile(context.outputFile, 'utf8')).trim().split('\n').map(line => {
       const separator = line.indexOf('=');
       return [line.slice(0, separator), line.slice(separator + 1)];
@@ -74,6 +78,8 @@ describe('GitHub Action entry point', () => {
     }
     expect(await readFile(outputs['svg-static']!, 'utf8')).not.toContain('<animate');
     expect(await readFile(outputs.svg!, 'utf8')).toContain('#F2EFF5');
+    expect(await readFile(outputs.svg!, 'utf8')).toContain(`href="data:image/png;base64,${icon.toString('base64')}"`);
+    expect(await readFile(outputs['svg-static']!, 'utf8')).not.toContain('<image');
     expect(await readFile(outputs['svg-static']!, 'utf8')).toContain('#F2EFF5');
     expect((await readdir(outputs['output-dir']!)).filter(name => name.endsWith('.svg')).sort()).toEqual(['game-static.svg', 'game.svg']);
     const replay = JSON.parse(await readFile(path.join(outputs['output-dir']!, 'replay.json'), 'utf8'));
@@ -120,6 +126,23 @@ describe('GitHub Action entry point', () => {
       });
     }
     expect(await readFile(context.outputFile, 'utf8')).toBe('');
+  });
+
+  it('rejects icons outside the caller repository, including symlink escapes', async () => {
+    const context = await workspace();
+    const other = await workspace();
+    const external = path.join(other.directory, 'github-mock.mjs');
+    await symlink(external, path.join(context.directory, 'outside.png'));
+    for (const icon of [external, path.relative(context.directory, external), 'outside.png']) {
+      await expect(context.run({ CONTRIBOOM_INPUT_PLAYER_ICON: icon })).rejects.toMatchObject({
+        stderr: expect.stringContaining('player-icon must be a file inside the caller workspace'),
+      });
+    }
+    await expect(context.run({ CONTRIBOOM_INPUT_PLAYER_ICON: 'missing.png' })).rejects.toMatchObject({
+      stderr: expect.stringContaining('Cannot read player-icon file'),
+    });
+    expect(await readFile(context.outputFile, 'utf8')).toBe('');
+    expect(await readdir(context.directory)).not.toContain('images with spaces');
   });
 
   it('passes untrusted inputs as arguments instead of executing shell commands', async () => {

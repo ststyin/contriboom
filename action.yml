@@ -24,6 +24,8 @@ inputs:
   theme:
     description: Tile palette for game.svg and game-static.svg (github, light, dark, ocean, sakura, cyberpunk, sunset, nord, mocha, mint, sky, lavender, peach, sand, rose).
     default: github
+  player-icon:
+    description: Image path inside the caller repository (PNG, JPEG, GIF, WebP, or SVG, up to 2 MiB). Leave empty for the default robot.
   seed:
     description: Seed for reproducible simulations.
     default: '42'
@@ -67,6 +69,7 @@ runs:
         CONTRIBOOM_INPUT_OUTPUT: ${{ inputs.output-dir }}
         CONTRIBOOM_INPUT_MODE: ${{ inputs.mode }}
         CONTRIBOOM_INPUT_THEME: ${{ inputs.theme }}
+        CONTRIBOOM_INPUT_PLAYER_ICON: ${{ inputs.player-icon }}
         CONTRIBOOM_INPUT_SEED: ${{ inputs.seed }}
         CONTRIBOOM_INPUT_RANGE: ${{ inputs.range }}
         CONTRIBOOM_INPUT_MAX_BOMBS: ${{ inputs.max-bombs }}

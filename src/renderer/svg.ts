@@ -5,9 +5,18 @@ import type { Frame } from './animations.ts';
 import { DEFAULT_THEME, THEMES } from './themes.ts';
 import type { Theme } from './themes.ts';
 
-export interface RenderOptions { theme?: Theme; label?: string; animated?: boolean }
+export interface RenderOptions {
+  theme?: Theme;
+  label?: string;
+  animated?: boolean;
+  /** Embedded image data URI, as returned by loadPlayerIcon. */
+  playerIcon?: string;
+}
 
 export function renderSvg(replay: Replay, options: RenderOptions = {}): string {
+  if (options.playerIcon !== undefined && !/^data:image\/(?:png|jpeg|gif|webp|svg\+xml);base64,[A-Za-z0-9+/]+={0,2}$/.test(options.playerIcon)) {
+    throw new Error('playerIcon must be an embedded image data URI.');
+  }
   const theme = THEMES[options.theme ?? DEFAULT_THEME];
   // Preserve the existing dark artwork; additional palettes only recolor tiles.
   const effectAccent = options.theme === 'dark' ? '#ffae57' : '#b65a15';
@@ -25,11 +34,11 @@ export function renderSvg(replay: Replay, options: RenderOptions = {}): string {
 
   emit(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="title desc">
 <title id="title">Contribution calendar</title>
-<desc id="desc">${options.label ? `${escapeXml(options.label)}: ` : ''}${animated ? 'A robot clears the contribution calendar, then rebuilds it.' : 'Daily contributions, shaded by activity level.'}</desc>`);
+<desc id="desc">${options.label ? `${escapeXml(options.label)}: ` : ''}${animated ? `A ${options.playerIcon ? 'character' : 'robot'} clears the contribution calendar, then rebuilds it.` : 'Daily contributions, shaded by activity level.'}</desc>`);
   if (animated) emit(`<defs>
   <clipPath id="calendar-clip"><rect x="${calendarX}" y="${calendarY}" width="${arena.width * stride - 2}" height="${arena.height * stride - 2}"/></clipPath>
   <g id="robot">
-    <ellipse cx="0" cy="9" rx="9" ry="3" fill="#000" opacity=".24"/>
+    ${options.playerIcon ? `<image href="${options.playerIcon}" x="-10" y="-10" width="20" height="20" preserveAspectRatio="xMidYMid meet"/>` : `<ellipse cx="0" cy="9" rx="9" ry="3" fill="#000" opacity=".24"/>
     <path d="M-7 4h5v5h-5zm9 0h5v5H2z" fill="#c86a30"/>
     <rect x="-6" y="-1" width="12" height="8" rx="2" fill="#ff9b50"/>
     <path d="M-8 0v4m16-4v4" stroke="#ffbd76" stroke-width="3" stroke-linecap="round"/>
@@ -37,7 +46,7 @@ export function renderSvg(replay: Replay, options: RenderOptions = {}): string {
     <rect x="-5.5" y="-7" width="11" height="5" rx="2" fill="#243c46"/>
     <path d="M-3-5h1m4 0h1" stroke="#8de1d8" stroke-width="1.6" stroke-linecap="round"/>
     <path d="M0-10v-3" stroke="#ff9b50" stroke-width="1.5"/>
-    <circle cy="-14" r="1.8" fill="#ffbd76"/>
+    <circle cy="-14" r="1.8" fill="#ffbd76"/>`}
   </g>
   <g id="bomb-shape">
     <ellipse cy="7" rx="9" ry="3" fill="#000" opacity=".25"/>

@@ -7,6 +7,7 @@ import { mockContributions } from './fixtures/contributions.ts';
 import type { Fixture } from './fixtures/contributions.ts';
 import type { Contribution } from './engine/types.ts';
 import { renderSvg } from './renderer/svg.ts';
+import { loadPlayerIcon } from './renderer/player-icon.ts';
 import { DEFAULT_THEME, THEMES } from './renderer/themes.ts';
 import type { Theme } from './renderer/themes.ts';
 import { getGitHubContributions } from './github/client.ts';
@@ -24,6 +25,7 @@ async function main(): Promise<void> {
     input: { type: 'string' },
     output: { type: 'string', default: 'artifacts' },
     theme: { type: 'string', default: DEFAULT_THEME },
+    'player-icon': { type: 'string' },
     mode: { type: 'string', default: 'clear' },
     'max-bombs': { type: 'string', default: '5' },
     range: { type: 'string', default: '3' },
@@ -36,12 +38,13 @@ async function main(): Promise<void> {
       '                    [--cache-dir .cache/contriboom] [--cache-ttl 3600] [--no-cache]\n' +
       'npm run generate -- [--seed 42] [--fixture demo|empty|full|sparse]\n' +
       '                    [--input contributions.json] [--output artifacts]\n' +
-      '                    [--theme <name>]\n' +
+      '                    [--theme <name>] [--player-icon path/to/image.png]\n' +
       '                    [--mode clear|preview] [--range 3]\n' +
       '                    [--max-bombs 5] [--duration 22] (preview only)\n\n' +
       'GitHub: set GITHUB_TOKEN or GH_TOKEN. Default period is the past year.\n' +
       'CONTRIBOOM_USERNAME supplies a default account; --input or --fixture overrides it.\n' +
       `Themes: ${Object.keys(THEMES).join(', ')}. Default: ${DEFAULT_THEME}.\n` +
+      'Player icon: local PNG, JPEG, GIF, WebP, or SVG, up to 2 MiB; defaults to the robot.\n' +
       'JSON input: complete chronological weeks of { date, count, level } days (up to 54 weeks).\n' +
       'Local JSON and fixtures work offline without a token.');
     return;
@@ -56,6 +59,7 @@ async function main(): Promise<void> {
   }
   const username = values.username ?? (!values.input && !values.fixture ? process.env.CONTRIBOOM_USERNAME : undefined);
   if (values.year !== undefined && !username) throw new Error('--year requires a GitHub account (--username or CONTRIBOOM_USERNAME).');
+  const playerIcon = values['player-icon'] === undefined ? undefined : await loadPlayerIcon(values['player-icon']);
   const seed = Number(values.seed);
   let data: Contribution[];
   let label: string | undefined;
@@ -82,7 +86,7 @@ async function main(): Promise<void> {
   const output = path.resolve(values.output!);
   await mkdir(output, { recursive: true });
   await Promise.all([
-    writeFile(path.join(output, 'game.svg'), renderSvg(replay, { theme, label })),
+    writeFile(path.join(output, 'game.svg'), renderSvg(replay, { theme, label, playerIcon })),
     writeFile(path.join(output, 'game-static.svg'), renderSvg(replay, { theme, animated: false, label })),
     writeFile(path.join(output, 'contributions.json'), JSON.stringify(data, null, 2) + '\n'),
     writeFile(path.join(output, 'replay.json'), JSON.stringify(replay, null, 2) + '\n'),

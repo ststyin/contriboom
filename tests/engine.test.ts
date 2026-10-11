@@ -226,6 +226,21 @@ describe('SVG output', () => {
   it('preserves the original robot size', () => {
     expect(renderSvg(replay).match(/<use href="#robot"[^>]*\/>/)?.[0]).toBe('<use href="#robot"/>');
   });
+  it('replaces only character artwork, retaining the player route and all effects', () => {
+    const playerIcon = 'data:image/png;base64,aGVsbG8=';
+    const original = renderSvg(replay);
+    const customized = renderSvg(replay, { playerIcon });
+    const artwork = /<g id="robot">[\s\S]*?<\/g>/;
+    expect(customized.match(artwork)?.[0]).toContain('<image');
+    expect(customized.match(artwork)?.[0]).toContain('x="-10" y="-10" width="20" height="20"');
+    expect(customized.replace(artwork, '').replace('A character clears', 'A robot clears')).toBe(original.replace(artwork, ''));
+    expect(renderSvg(replay, { playerIcon, animated: false })).toBe(renderSvg(replay, { animated: false }));
+  });
+  it('requires embedded images instead of external paths or injected SVG attributes', () => {
+    for (const playerIcon of ['https://example.com/player.png', 'assets/player.png', 'data:image/png;base64,aGVsbG8=" onload="alert(1)']) {
+      expect(() => renderSvg(replay, { playerIcon })).toThrow('embedded image data URI');
+    }
+  });
   it('renders the original calendar when no empty spawn exists', () => {
     const full = simulate(createArena(mockContributions(42, 'full')), { mode: 'preview' });
     const svg = renderSvg(full);
