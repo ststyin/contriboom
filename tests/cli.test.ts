@@ -151,4 +151,24 @@ describe('generation CLI', () => {
     expect(await readFile(path.join(output, 'game-static.svg'), 'utf8')).not.toContain('<animate');
     await expect(run(['--username', 'octocat', '--block-damage', 'invalid', '--output', output])).rejects.toMatchObject({ stderr: expect.stringContaining('Unknown block-damage') });
   });
+
+  it('computes adaptive ranges from exported daily counts and records the calculation', async () => {
+    const source = await directory();
+    const output = await directory();
+    await run(['--fixture', 'empty', '--output', source]);
+    const days = JSON.parse(await readFile(path.join(source, 'contributions.json'), 'utf8'));
+    for (let offset = 1; offset <= 7; offset++) days[days.length - 1 - offset] = { ...days[days.length - 1 - offset], count: 8, level: 3 };
+    days[days.length - 1] = { ...days[days.length - 1], count: 1000, level: 4 };
+    const input = path.join(source, 'activity.json');
+    await writeFile(input, JSON.stringify(days));
+    for (const [mode, range] of [['previous-day', 4], ['previous-week', 4], ['previous-month', 2]] as const) {
+      await run(['--input', input, '--mode', 'preview', '--max-bombs', '0', '--range-mode', mode, '--range-max', '4', '--output', output]);
+      const replay = JSON.parse(await readFile(path.join(output, 'replay.json'), 'utf8'));
+      expect(replay.config).toMatchObject({ explosionRange: range, explosionRangeMax: 4 });
+      expect(replay.rangeCalculation).toMatchObject({ mode, range, referenceDate: days.at(-1).date });
+    }
+    for (const args of [['--range-mode', 'unknown'], ['--range-max', '11'], ['--range', '0']]) {
+      await expect(run(['--username', 'octocat', ...args, '--output', output])).rejects.toMatchObject({ stderr: expect.stringContaining('range') });
+    }
+  });
 });

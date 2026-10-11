@@ -3,6 +3,8 @@ import { parseArgs } from 'node:util';
 import path from 'node:path';
 import { createArena } from './engine/map.ts';
 import { simulate } from './engine/simulator.ts';
+import { DEFAULT_RANGE_MAX, resolveExplosionRange, validateRangeOptions } from './engine/range.ts';
+import type { RangeMode } from './engine/range.ts';
 import { mockContributions } from './fixtures/contributions.ts';
 import type { Fixture } from './fixtures/contributions.ts';
 import type { BlockDamage, Contribution } from './engine/types.ts';
@@ -31,6 +33,8 @@ async function main(): Promise<void> {
     mode: { type: 'string', default: 'clear' },
     'max-bombs': { type: 'string', default: '5' },
     range: { type: 'string', default: '3' },
+    'range-mode': { type: 'string', default: 'fixed' },
+    'range-max': { type: 'string', default: String(DEFAULT_RANGE_MAX) },
     'block-damage': { type: 'string', default: 'instant' },
     duration: { type: 'string', default: '22' },
     help: { type: 'boolean', default: false },
@@ -44,6 +48,7 @@ async function main(): Promise<void> {
       '                    [--theme <name>] [--player-icon path/to/image.png]\n' +
       '                    [--player-icon-trim auto|none]\n' +
       '                    [--mode clear|preview] [--range 3]\n' +
+      '                    [--range-mode fixed|previous-day|previous-week|previous-month] [--range-max 6]\n' +
       '                    [--block-damage instant|fade]\n' +
       '                    [--max-bombs 5] [--duration 22] (preview only)\n\n' +
       'GitHub: set GITHUB_TOKEN or GH_TOKEN. Default period is the past year.\n' +
@@ -51,6 +56,7 @@ async function main(): Promise<void> {
       `Themes: ${Object.keys(THEMES).join(', ')}. Default: ${DEFAULT_THEME}.\n` +
       'Player icon: local PNG, JPEG, GIF, WebP, or SVG, up to 2 MiB; defaults to the robot.\n' +
       'Icon margins: auto trims transparent or near-white borders; none preserves the full canvas.\n' +
+      'Explosion range: fixed value or ceiling of previous activity (7/30-day averages), capped by range-max (1–10).\n' +
       'JSON input: complete chronological weeks of { date, count, level } days (up to 54 weeks).\n' +
       'Local JSON and fixtures work offline without a token.');
     return;
@@ -58,6 +64,8 @@ async function main(): Promise<void> {
   if (!Object.hasOwn(THEMES, values.theme!)) throw new Error(`Unknown theme. Choose ${Object.keys(THEMES).join(', ')}.`);
   if (!['auto', 'none'].includes(values['player-icon-trim']!)) throw new Error('Unknown player-icon-trim. Choose auto or none.');
   if (!['instant', 'fade'].includes(values['block-damage']!)) throw new Error('Unknown block-damage. Choose instant or fade.');
+  const rangeOptions = { mode: values['range-mode'] as RangeMode, fixedRange: Number(values.range), maxRange: Number(values['range-max']) };
+  validateRangeOptions(rangeOptions);
   const theme = values.theme as Theme;
   const fixture = values.fixture ?? 'demo';
   if (!['demo', 'empty', 'full', 'sparse'].includes(fixture)) throw new Error('Unknown fixture.');
@@ -71,6 +79,7 @@ async function main(): Promise<void> {
   const seed = Number(values.seed);
   let data: Contribution[];
   let label: string | undefined;
+  let referenceDate: string | undefined;
   if (username) {
     const calendar = await getGitHubContributions({
       username, year: values.year === undefined ? undefined : Number(values.year),
@@ -78,6 +87,7 @@ async function main(): Promise<void> {
       cacheTtlSeconds: Number(values['cache-ttl']), refresh: values.refresh,
     });
     data = calendar.contributions;
+    referenceDate = calendar.range.to.slice(0, 10);
     label = `@${calendar.login}`;
     console.log(`Contributions for ${label} (${calendar.source}, ${calendar.range.from.slice(0, 10)} to ${calendar.range.to.slice(0, 10)})`);
   } else {
@@ -87,9 +97,11 @@ async function main(): Promise<void> {
   }
   if (!Array.isArray(data)) throw new Error('Input must be an array of contribution days.');
   const arena = createArena(data, data.length / 7);
+  const rangeCalculation = resolveExplosionRange(data, { ...rangeOptions, referenceDate });
   const replay = simulate(arena, {
     seed, mode: values.mode as 'clear' | 'preview', maxBombs: Number(values['max-bombs']),
-    explosionRange: Number(values.range), blockDamage: values['block-damage'] as BlockDamage, maxDuration: Number(values.duration),
+    explosionRange: rangeCalculation.range, explosionRangeMax: rangeCalculation.maxRange,
+    blockDamage: values['block-damage'] as BlockDamage, maxDuration: Number(values.duration),
   });
   const output = path.resolve(values.output!);
   await mkdir(output, { recursive: true });
@@ -97,9 +109,10 @@ async function main(): Promise<void> {
     writeFile(path.join(output, 'game.svg'), renderSvg(replay, { theme, label, playerIcon })),
     writeFile(path.join(output, 'game-static.svg'), renderSvg(replay, { theme, animated: false, label })),
     writeFile(path.join(output, 'contributions.json'), JSON.stringify(data, null, 2) + '\n'),
-    writeFile(path.join(output, 'replay.json'), JSON.stringify(replay, null, 2) + '\n'),
+    writeFile(path.join(output, 'replay.json'), JSON.stringify({ ...replay, rangeCalculation }, null, 2) + '\n'),
   ]);
   console.log(`Generated ${output}\n${replay.stats.bombs} bombs · ${replay.stats.destroyed}/${replay.stats.totalBoxes} blocks cleared · ${replay.duration.toFixed(2)}s loop (${replay.config.mode})`);
+  console.log(`Explosion range: ${rangeCalculation.range} (${rangeCalculation.mode}, maximum ${rangeCalculation.maxRange}${rangeCalculation.average === undefined ? '' : `, daily average ${rangeCalculation.average.toFixed(2)} from ${rangeCalculation.from} to ${rangeCalculation.to}`})`);
 }
 
 main().catch((error: unknown) => {

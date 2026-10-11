@@ -155,6 +155,22 @@ describe('GitHub Action entry point', () => {
     expect(await readFile(output, 'utf8')).not.toContain('viewBox="40 40 20 20"');
   });
 
+  it('calculates adaptive ranges from real queried dates, ignoring year padding and today', async () => {
+    const context = await workspace();
+    const preload = path.join(context.directory, 'github-mock.mjs');
+    await writeFile(preload, (await readFile(preload, 'utf8')).replace(
+      'index % 14 === 0 ? 3 : 0', 'index >= 357 && index < 364 ? 8 : index === 364 ? 200 : 0',
+    ));
+    for (const [mode, maxRange, range] of [['previous-day', '6', 6], ['previous-week', '2', 2], ['previous-month', '6', 2]] as const) {
+      const { stdout } = await context.run({ CONTRIBOOM_INPUT_MODE: 'clear', CONTRIBOOM_INPUT_RANGE_MODE: mode, CONTRIBOOM_INPUT_RANGE_MAX: maxRange, CONTRIBOOM_INPUT_BLOCK_DAMAGE: 'fade' });
+      const replay = JSON.parse(await readFile(path.join(context.directory, 'images with spaces/contriboom/replay.json'), 'utf8'));
+      expect(replay.config).toMatchObject({ explosionRange: range, explosionRangeMax: Number(maxRange), blockDamage: 'fade' });
+      expect(replay.rangeCalculation).toMatchObject({ referenceDate: '2025-12-31', to: '2025-12-30', mode, range });
+      expect(stdout).toContain(`Explosion range: ${range}`);
+      expect(await readFile(path.join(context.directory, 'images with spaces/contriboom/game.svg'), 'utf8')).toContain('attributeName="fill"');
+    }
+  });
+
   it('passes untrusted inputs as arguments instead of executing shell commands', async () => {
     const context = await workspace();
     await expect(context.run({ CONTRIBOOM_INPUT_USERNAME: 'octocat; touch injected' })).rejects.toMatchObject({

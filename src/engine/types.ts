@@ -33,6 +33,7 @@ export interface GameConfig {
   seed: number;
   maxBombs: number;
   explosionRange: number;
+  explosionRangeMax: number;
   blockDamage: BlockDamage;
   stepDuration: number;
   fuse: number;

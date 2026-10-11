@@ -170,6 +170,11 @@ describe('simulation invariants', () => {
   it('respects different blast ranges and shorter round budgets', () => {
     for (const range of [1, 2, 4, 8]) verifyRound('demo', range, { explosionRange: range, maxDuration: 12 });
   });
+  it('caps fixed ranges at six by default and honors an explicit upper limit', () => {
+    expect(verifyRound('sparse', 42, { explosionRange: 10 }).config.explosionRange).toBe(6);
+    expect(verifyRound('sparse', 42, { explosionRange: 10, explosionRangeMax: 10 }).config.explosionRange).toBe(10);
+    expect(verifyRound('sparse', 42, { explosionRangeMax: 1, blockDamage: 'fade' }).config.explosionRange).toBe(1);
+  });
   it('handles zero bombs and an extremely slow patrol without exceeding the budget', () => {
     verifyRound('empty', 42, { maxBombs: 0, stepDuration: 100 });
   });
@@ -235,7 +240,7 @@ describe('input validation', () => {
   });
   it('rejects unsafe or nonsensical configuration', () => {
     const arena = createArena(mockContributions());
-    for (const options of [{ maxBombs: -1 }, { seed: NaN }, { explosionRange: 0 }, { fuse: Infinity }, { stepDuration: 0 }, { maxDuration: 2 }]) {
+    for (const options of [{ maxBombs: -1 }, { seed: NaN }, { explosionRange: 0 }, { explosionRangeMax: 0 }, { explosionRangeMax: 11 }, { fuse: Infinity }, { stepDuration: 0 }, { maxDuration: 2 }]) {
       expect(() => simulate(arena, options)).toThrow();
     }
   });

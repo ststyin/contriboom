@@ -33,8 +33,14 @@ inputs:
     description: Seed for reproducible simulations.
     default: '42'
   range:
-    description: Explosion range in cells (1–10).
+    description: Fixed explosion range in cells (1–10), capped by range-max. Used when range-mode is fixed.
     default: '3'
+  range-mode:
+    description: fixed, previous-day, previous-week (7-day daily average), or previous-month (30-day daily average). Adaptive values are rounded up and capped by range-max.
+    default: fixed
+  range-max:
+    description: Maximum explosion range for both fixed and adaptive modes (1–10).
+    default: '6'
   block-damage:
     description: instant destroys a block on one hit; fade lowers its activity level by one per hit until it disappears.
     default: instant
@@ -85,6 +91,8 @@ runs:
         CONTRIBOOM_INPUT_PLAYER_ICON_TRIM: ${{ inputs.player-icon-trim }}
         CONTRIBOOM_INPUT_SEED: ${{ inputs.seed }}
         CONTRIBOOM_INPUT_RANGE: ${{ inputs.range }}
+        CONTRIBOOM_INPUT_RANGE_MODE: ${{ inputs.range-mode }}
+        CONTRIBOOM_INPUT_RANGE_MAX: ${{ inputs.range-max }}
         CONTRIBOOM_INPUT_BLOCK_DAMAGE: ${{ inputs.block-damage }}
         CONTRIBOOM_INPUT_MAX_BOMBS: ${{ inputs.max-bombs }}
         CONTRIBOOM_INPUT_DURATION: ${{ inputs.duration }}

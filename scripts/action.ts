@@ -3,6 +3,7 @@ import { appendFile, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DEFAULT_THEME } from '../src/renderer/themes.ts';
+import { DEFAULT_RANGE_MAX } from '../src/engine/range.ts';
 
 async function main(): Promise<void> {
   const username = process.env.CONTRIBOOM_INPUT_USERNAME?.trim();
@@ -34,6 +35,7 @@ async function main(): Promise<void> {
     ['YEAR', 'year', ''], ['MODE', 'mode', 'clear'], ['SEED', 'seed', '42'], ['THEME', 'theme', DEFAULT_THEME],
     ['PLAYER_ICON_TRIM', 'player-icon-trim', 'auto'],
     ['BLOCK_DAMAGE', 'block-damage', 'instant'],
+    ['RANGE_MODE', 'range-mode', 'fixed'], ['RANGE_MAX', 'range-max', String(DEFAULT_RANGE_MAX)],
     ['RANGE', 'range', '3'], ['MAX_BOMBS', 'max-bombs', '5'], ['DURATION', 'duration', '22'],
   ] as const) {
     const value = process.env[`CONTRIBOOM_INPUT_${input}`] ?? fallback;
