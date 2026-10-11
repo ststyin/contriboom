@@ -47,7 +47,7 @@ describe('generation CLI', () => {
   });
 
   it.each([
-    ['PNG', 'image/png', Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aS9sAAAAASUVORK5CYII=', 'base64')],
+    ['PNG', 'image/png', Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAADUlEQVQImWP438HwHwAGmAKHX+KYDQAAAABJRU5ErkJggg==', 'base64')],
     ['SVG', 'image/svg+xml', Buffer.from('<?xml version="1.0"?>\n<!-- custom artwork -->\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="red"/></svg>')],
   ])('embeds a local %s icon and keeps the replay and static calendar unchanged', async (_format, mime, bytes) => {
     const assets = await directory();
@@ -86,6 +86,21 @@ describe('generation CLI', () => {
       });
     }
     expect(await readdir(output)).toEqual([]);
+  });
+
+  it('can preserve deliberate icon padding, and rejects unknown trim settings', async () => {
+    const assets = await directory();
+    const output = await directory();
+    const icon = path.join(assets, 'padded.svg');
+    await writeFile(icon, '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="40" y="40" width="20" height="20" fill="red"/></svg>');
+    const args = ['--fixture', 'sparse', '--mode', 'preview', '--player-icon', icon, '--output', output];
+    await run(args);
+    expect(await readFile(path.join(output, 'game.svg'), 'utf8')).toContain('viewBox="40 40 20 20"');
+    await run([...args, '--player-icon-trim', 'none']);
+    expect(await readFile(path.join(output, 'game.svg'), 'utf8')).not.toContain('viewBox="40 40 20 20"');
+    await expect(run(['--player-icon-trim', 'invalid', '--input', 'missing.json', '--output', output])).rejects.toMatchObject({
+      stderr: expect.stringContaining('Unknown player-icon-trim'),
+    });
   });
 
   it.each([

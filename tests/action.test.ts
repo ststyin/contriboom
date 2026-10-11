@@ -61,7 +61,7 @@ afterEach(async () => {
 describe('GitHub Action entry point', () => {
   it('generates in the caller workspace, forwards settings and emits usable absolute paths', async () => {
     const context = await workspace();
-    const icon = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aS9sAAAAASUVORK5CYII=', 'base64');
+    const icon = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAADUlEQVQImWP438HwHwAGmAKHX+KYDQAAAABJRU5ErkJggg==', 'base64');
     await mkdir(path.join(context.directory, 'my assets'));
     const iconPath = "my assets/player 'icon'.png";
     await writeFile(path.join(context.directory, iconPath), icon);
@@ -143,6 +143,16 @@ describe('GitHub Action entry point', () => {
     });
     expect(await readFile(context.outputFile, 'utf8')).toBe('');
     expect(await readdir(context.directory)).not.toContain('images with spaces');
+  });
+
+  it('forwards the icon trim setting from the workflow', async () => {
+    const context = await workspace();
+    await writeFile(path.join(context.directory, 'padded.svg'), '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="40" y="40" width="20" height="20" fill="red"/></svg>');
+    await context.run({ CONTRIBOOM_INPUT_PLAYER_ICON: 'padded.svg' });
+    const output = path.join(context.directory, 'images with spaces/contriboom/game.svg');
+    expect(await readFile(output, 'utf8')).toContain('viewBox="40 40 20 20"');
+    await context.run({ CONTRIBOOM_INPUT_PLAYER_ICON: 'padded.svg', CONTRIBOOM_INPUT_PLAYER_ICON_TRIM: 'none' });
+    expect(await readFile(output, 'utf8')).not.toContain('viewBox="40 40 20 20"');
   });
 
   it('passes untrusted inputs as arguments instead of executing shell commands', async () => {

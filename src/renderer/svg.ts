@@ -4,18 +4,33 @@ import { animation, escapeXml, visibleBetween } from './animations.ts';
 import type { Frame } from './animations.ts';
 import { DEFAULT_THEME, THEMES } from './themes.ts';
 import type { Theme } from './themes.ts';
+import type { PlayerIcon } from './player-icon.ts';
 
 export interface RenderOptions {
   theme?: Theme;
   label?: string;
   animated?: boolean;
   /** Embedded image data URI, as returned by loadPlayerIcon. */
-  playerIcon?: string;
+  playerIcon?: string | PlayerIcon;
 }
 
 export function renderSvg(replay: Replay, options: RenderOptions = {}): string {
-  if (options.playerIcon !== undefined && !/^data:image\/(?:png|jpeg|gif|webp|svg\+xml);base64,[A-Za-z0-9+/]+={0,2}$/.test(options.playerIcon)) {
+  const icon = typeof options.playerIcon === 'string' ? { dataUri: options.playerIcon } : options.playerIcon;
+  if (icon !== undefined && !/^data:image\/(?:png|jpeg|gif|webp|svg\+xml);base64,[A-Za-z0-9+/]+={0,2}$/.test(icon.dataUri)) {
     throw new Error('playerIcon must be an embedded image data URI.');
+  }
+  let iconArtwork: string | undefined;
+  if (icon) {
+    const crop = icon.crop;
+    if (crop) {
+      if (!Object.values(crop).every(value => Number.isFinite(value) && value >= 0) ||
+          crop.width <= 0 || crop.height <= 0 || crop.left + crop.width > crop.imageWidth || crop.top + crop.height > crop.imageHeight) {
+        throw new Error('Invalid playerIcon crop bounds.');
+      }
+      iconArtwork = `<svg x="-10" y="-10" width="20" height="20" viewBox="${crop.left} ${crop.top} ${crop.width} ${crop.height}" preserveAspectRatio="xMidYMid meet" overflow="hidden"><defs><clipPath id="player-icon-clip"><rect x="${crop.left}" y="${crop.top}" width="${crop.width}" height="${crop.height}"/></clipPath></defs><image href="${icon.dataUri}" width="${crop.imageWidth}" height="${crop.imageHeight}" clip-path="url(#player-icon-clip)"/></svg>`;
+    } else {
+      iconArtwork = `<image href="${icon.dataUri}" x="-10" y="-10" width="20" height="20" preserveAspectRatio="xMidYMid meet"/>`;
+    }
   }
   const theme = THEMES[options.theme ?? DEFAULT_THEME];
   // Preserve the existing dark artwork; additional palettes only recolor tiles.
@@ -38,7 +53,7 @@ export function renderSvg(replay: Replay, options: RenderOptions = {}): string {
   if (animated) emit(`<defs>
   <clipPath id="calendar-clip"><rect x="${calendarX}" y="${calendarY}" width="${arena.width * stride - 2}" height="${arena.height * stride - 2}"/></clipPath>
   <g id="robot">
-    ${options.playerIcon ? `<image href="${options.playerIcon}" x="-10" y="-10" width="20" height="20" preserveAspectRatio="xMidYMid meet"/>` : `<ellipse cx="0" cy="9" rx="9" ry="3" fill="#000" opacity=".24"/>
+    ${iconArtwork ?? `<ellipse cx="0" cy="9" rx="9" ry="3" fill="#000" opacity=".24"/>
     <path d="M-7 4h5v5h-5zm9 0h5v5H2z" fill="#c86a30"/>
     <rect x="-6" y="-1" width="12" height="8" rx="2" fill="#ff9b50"/>
     <path d="M-8 0v4m16-4v4" stroke="#ffbd76" stroke-width="3" stroke-linecap="round"/>

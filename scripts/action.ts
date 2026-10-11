@@ -32,6 +32,7 @@ async function main(): Promise<void> {
   }
   for (const [input, flag, fallback] of [
     ['YEAR', 'year', ''], ['MODE', 'mode', 'clear'], ['SEED', 'seed', '42'], ['THEME', 'theme', DEFAULT_THEME],
+    ['PLAYER_ICON_TRIM', 'player-icon-trim', 'auto'],
     ['RANGE', 'range', '3'], ['MAX_BOMBS', 'max-bombs', '5'], ['DURATION', 'duration', '22'],
   ] as const) {
     const value = process.env[`CONTRIBOOM_INPUT_${input}`] ?? fallback;

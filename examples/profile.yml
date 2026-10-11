@@ -35,6 +35,7 @@ jobs:
           mode: clear
           # theme: mint
           # player-icon: assets/bomber.png
+          # player-icon-trim: none # Default: auto (trim transparent or near-white margins).
 
       - name: Commit updated images
         shell: bash

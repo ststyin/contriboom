@@ -26,6 +26,9 @@ inputs:
     default: github
   player-icon:
     description: Image path inside the caller repository (PNG, JPEG, GIF, WebP, or SVG, up to 2 MiB). Leave empty for the default robot.
+  player-icon-trim:
+    description: auto fits the character after trimming transparent or near-white margins; none preserves the entire image canvas.
+    default: auto
   seed:
     description: Seed for reproducible simulations.
     default: '42'
@@ -58,6 +61,12 @@ runs:
       with:
         node-version: '24'
         package-manager-cache: false
+    - name: Install image processing dependency
+      if: ${{ inputs.player-icon != '' && inputs.player-icon-trim != 'none' }}
+      shell: bash
+      env:
+        CONTRIBOOM_ACTION_PATH: ${{ github.action_path }}
+      run: npm ci --omit=dev --include=optional --ignore-scripts --prefix "$CONTRIBOOM_ACTION_PATH"
     - name: Generate contribution arena
       id: generate
       shell: bash
@@ -70,6 +79,7 @@ runs:
         CONTRIBOOM_INPUT_MODE: ${{ inputs.mode }}
         CONTRIBOOM_INPUT_THEME: ${{ inputs.theme }}
         CONTRIBOOM_INPUT_PLAYER_ICON: ${{ inputs.player-icon }}
+        CONTRIBOOM_INPUT_PLAYER_ICON_TRIM: ${{ inputs.player-icon-trim }}
         CONTRIBOOM_INPUT_SEED: ${{ inputs.seed }}
         CONTRIBOOM_INPUT_RANGE: ${{ inputs.range }}
         CONTRIBOOM_INPUT_MAX_BOMBS: ${{ inputs.max-bombs }}

@@ -8,6 +8,7 @@ import type { Fixture } from './fixtures/contributions.ts';
 import type { Contribution } from './engine/types.ts';
 import { renderSvg } from './renderer/svg.ts';
 import { loadPlayerIcon } from './renderer/player-icon.ts';
+import type { PlayerIconTrim } from './renderer/player-icon.ts';
 import { DEFAULT_THEME, THEMES } from './renderer/themes.ts';
 import type { Theme } from './renderer/themes.ts';
 import { getGitHubContributions } from './github/client.ts';
@@ -26,6 +27,7 @@ async function main(): Promise<void> {
     output: { type: 'string', default: 'artifacts' },
     theme: { type: 'string', default: DEFAULT_THEME },
     'player-icon': { type: 'string' },
+    'player-icon-trim': { type: 'string', default: 'auto' },
     mode: { type: 'string', default: 'clear' },
     'max-bombs': { type: 'string', default: '5' },
     range: { type: 'string', default: '3' },
@@ -39,17 +41,20 @@ async function main(): Promise<void> {
       'npm run generate -- [--seed 42] [--fixture demo|empty|full|sparse]\n' +
       '                    [--input contributions.json] [--output artifacts]\n' +
       '                    [--theme <name>] [--player-icon path/to/image.png]\n' +
+      '                    [--player-icon-trim auto|none]\n' +
       '                    [--mode clear|preview] [--range 3]\n' +
       '                    [--max-bombs 5] [--duration 22] (preview only)\n\n' +
       'GitHub: set GITHUB_TOKEN or GH_TOKEN. Default period is the past year.\n' +
       'CONTRIBOOM_USERNAME supplies a default account; --input or --fixture overrides it.\n' +
       `Themes: ${Object.keys(THEMES).join(', ')}. Default: ${DEFAULT_THEME}.\n` +
       'Player icon: local PNG, JPEG, GIF, WebP, or SVG, up to 2 MiB; defaults to the robot.\n' +
+      'Icon margins: auto trims transparent or near-white borders; none preserves the full canvas.\n' +
       'JSON input: complete chronological weeks of { date, count, level } days (up to 54 weeks).\n' +
       'Local JSON and fixtures work offline without a token.');
     return;
   }
   if (!Object.hasOwn(THEMES, values.theme!)) throw new Error(`Unknown theme. Choose ${Object.keys(THEMES).join(', ')}.`);
+  if (!['auto', 'none'].includes(values['player-icon-trim']!)) throw new Error('Unknown player-icon-trim. Choose auto or none.');
   const theme = values.theme as Theme;
   const fixture = values.fixture ?? 'demo';
   if (!['demo', 'empty', 'full', 'sparse'].includes(fixture)) throw new Error('Unknown fixture.');
@@ -59,7 +64,7 @@ async function main(): Promise<void> {
   }
   const username = values.username ?? (!values.input && !values.fixture ? process.env.CONTRIBOOM_USERNAME : undefined);
   if (values.year !== undefined && !username) throw new Error('--year requires a GitHub account (--username or CONTRIBOOM_USERNAME).');
-  const playerIcon = values['player-icon'] === undefined ? undefined : await loadPlayerIcon(values['player-icon']);
+  const playerIcon = values['player-icon'] === undefined ? undefined : await loadPlayerIcon(values['player-icon'], values['player-icon-trim'] as PlayerIconTrim);
   const seed = Number(values.seed);
   let data: Contribution[];
   let label: string | undefined;
