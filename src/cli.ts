@@ -35,7 +35,6 @@ async function main(): Promise<void> {
     range: { type: 'string', default: String(DEFAULT_RANGE) },
     'range-mode': { type: 'string', default: 'fixed' },
     'block-damage': { type: 'string', default: DEFAULT_CONFIG.blockDamage },
-    duration: { type: 'string', default: '22' },
     help: { type: 'boolean', default: false },
   } });
   if (values.help) {
@@ -49,7 +48,7 @@ async function main(): Promise<void> {
       `                    [--mode clear|preview] [--range ${DEFAULT_RANGE}]\n` +
       '                    [--range-mode fixed|previous-day|previous-week|previous-month]\n' +
       '                    [--block-damage instant|fade]\n' +
-      '                    [--max-bombs 5] [--duration 22] (preview only)\n\n' +
+      '                    [--max-bombs 5] (preview only)\n\n' +
       'GitHub: set GITHUB_TOKEN or GH_TOKEN. Default period is the past year.\n' +
       'CONTRIBOOM_USERNAME supplies a default account; --input or --fixture overrides it.\n' +
       `Themes: ${Object.keys(THEMES).join(', ')}. Default: ${DEFAULT_THEME}.\n` +
@@ -101,7 +100,7 @@ async function main(): Promise<void> {
   const replay = simulate(arena, {
     seed, mode: values.mode as 'clear' | 'preview', maxBombs: Number(values['max-bombs']),
     explosionRange: rangeCalculation.range,
-    blockDamage: values['block-damage'] as BlockDamage, maxDuration: Number(values.duration),
+    blockDamage: values['block-damage'] as BlockDamage,
   });
   const output = path.resolve(values.output!);
   await mkdir(output, { recursive: true });

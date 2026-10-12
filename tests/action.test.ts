@@ -3,7 +3,7 @@ import { mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile } from 'node:
 import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
 
 const execute = promisify(execFile);
@@ -47,8 +47,8 @@ async function workspace() {
     CONTRIBOOM_INPUT_USERNAME: 'octocat', CONTRIBOOM_INPUT_TOKEN: 'action-test-token',
     CONTRIBOOM_INPUT_YEAR: '2025', CONTRIBOOM_INPUT_OUTPUT: 'images with spaces/contriboom',
     CONTRIBOOM_INPUT_MODE: 'preview', CONTRIBOOM_INPUT_SEED: '71',
-    CONTRIBOOM_INPUT_RANGE: '2', CONTRIBOOM_INPUT_MAX_BOMBS: '2', CONTRIBOOM_INPUT_DURATION: '12',
-    NODE_OPTIONS: `--import=${preload}`,
+    CONTRIBOOM_INPUT_RANGE: '2', CONTRIBOOM_INPUT_MAX_BOMBS: '2',
+    NODE_OPTIONS: `--import=${pathToFileURL(preload).href}`,
   };
   return { directory, outputFile, env, run: (overrides: Record<string, string> = {}) =>
     execute(process.execPath, [action], { cwd: directory, env: { ...env, ...overrides } }) };
@@ -83,9 +83,9 @@ describe('GitHub Action entry point', () => {
     expect(await readFile(outputs['svg-static']!, 'utf8')).toContain('#F2EFF5');
     expect((await readdir(outputs['output-dir']!)).filter(name => name.endsWith('.svg')).sort()).toEqual(['game-static.svg', 'game.svg']);
     const replay = JSON.parse(await readFile(path.join(outputs['output-dir']!, 'replay.json'), 'utf8'));
-    expect(replay.config).toMatchObject({ mode: 'preview', seed: 71, explosionRange: 2, blockDamage: 'instant', maxBombs: 2, maxDuration: 12 });
-    expect(replay.duration).toBeLessThanOrEqual(12);
-    expect(replay.stats.bombs).toBeLessThanOrEqual(2);
+    expect(replay.config).toMatchObject({ mode: 'preview', seed: 71, explosionRange: 2, blockDamage: 'instant', maxBombs: 2 });
+    expect(replay.config).not.toHaveProperty('maxDuration');
+    expect(replay.stats.bombs).toBe(2);
     expect(stdout).not.toContain(context.env.CONTRIBOOM_INPUT_TOKEN);
     expect(await readdir(context.directory)).not.toContain('.cache');
   });

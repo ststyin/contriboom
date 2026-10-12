@@ -23,6 +23,19 @@ afterEach(async () => {
 });
 
 describe('generation CLI', () => {
+  it('uses only a bomb budget for previews and rejects the removed duration option', async () => {
+    const output = await directory();
+    await run(['--fixture', 'demo', '--mode', 'preview', '--max-bombs', '20', '--output', output]);
+    const replay = JSON.parse(await readFile(path.join(output, 'replay.json'), 'utf8'));
+    expect(replay.stats.bombs).toBe(20);
+    expect(replay.duration).toBeGreaterThan(22);
+    expect(replay.config).not.toHaveProperty('maxDuration');
+    const help = await run(['--help']);
+    expect(help.stdout).not.toContain('--duration');
+    await expect(run(['--duration', '22', '--output', output])).rejects.toMatchObject({
+      stderr: expect.stringContaining('--duration'),
+    });
+  });
   it('generates offline with an explicit fixture even when a default GitHub account is configured', async () => {
     const output = await directory();
     await run(['--fixture', 'empty', '--output', output], { ...environment, CONTRIBOOM_USERNAME: 'octocat' });

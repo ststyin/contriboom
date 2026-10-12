@@ -48,15 +48,13 @@ jobs:
 
           # ===== Playback mode =====
           # mode: clear | preview. Default: clear.
-          # clear: Requires a safe full clear, with no bomb count or loop duration cap.
-          # preview: Limits bombs and loop duration; some blocks may remain uncleared.
+          # clear: Requires a safe full clear, with no bomb count cap.
+          # preview: Limits the number of bombs; some blocks may remain uncleared.
           # mode: clear
 
-          # The following optional limits apply only to preview; the animation may finish earlier.
+          # This optional limit applies only to preview; fewer bombs may be placed.
           # max-bombs: Integer from 0 to 20. Default: 5 bombs.
           # max-bombs: '5'
-          # duration: 8 to 60 seconds. Default: 22 (the entire loop, including the rebuild animation).
-          # duration: '22'
 
           # ===== Explosion rules =====
           # block-damage: fade | instant. Default: fade.

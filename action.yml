@@ -19,7 +19,7 @@ inputs:
     description: Destination directory inside the caller's workspace.
     default: artifacts
   mode:
-    description: clear requires a safe full clear; preview limits bombs and duration.
+    description: clear requires a safe full clear; preview limits the number of bombs.
     default: clear
   theme:
     description: Tile palette for game.svg and game-static.svg (github, light, dark, ocean, sakura, cyberpunk, sunset, nord, mocha, mint, sky, lavender, peach, sand, rose).
@@ -44,9 +44,6 @@ inputs:
   max-bombs:
     description: Maximum bombs in preview mode (0–20).
     default: '5'
-  duration:
-    description: Maximum loop duration in preview mode, in seconds (8–60).
-    default: '22'
 
 outputs:
   output-dir:
@@ -91,5 +88,4 @@ runs:
         CONTRIBOOM_INPUT_RANGE_MODE: ${{ inputs.range-mode }}
         CONTRIBOOM_INPUT_BLOCK_DAMAGE: ${{ inputs.block-damage }}
         CONTRIBOOM_INPUT_MAX_BOMBS: ${{ inputs.max-bombs }}
-        CONTRIBOOM_INPUT_DURATION: ${{ inputs.duration }}
       run: node "$CONTRIBOOM_ACTION_PATH/scripts/action.ts"

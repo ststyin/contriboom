@@ -130,7 +130,7 @@ function verifyRound(fixture: Fixture, seed: number, options: Partial<GameConfig
   expect(levels).toEqual(originalLevels);
   expect(replay.stats.bombs).toBe(placed);
   expect(replay.stats.destroyed).toBe(cleared);
-  if (replay.config.mode === 'preview') expect(replay.duration).toBeLessThanOrEqual(replay.config.maxDuration);
+  if (replay.config.mode === 'preview') expect(placed).toBeLessThanOrEqual(replay.config.maxBombs);
   else expect(cleared).toBe(pristine.size);
   expect(replay.stats.remaining).toBe(pristine.size - cleared);
   expect(replay.stats.totalBoxes).toBe(pristine.size);
@@ -167,16 +167,24 @@ describe('simulation invariants', () => {
       for (let seed = 0; seed < 12; seed++) verifyRound(fixture, seed);
     }, 30000);
   }
-  it('respects different blast ranges and shorter round budgets', () => {
-    for (const range of [1, 2, 4, 8]) verifyRound('demo', range, { explosionRange: range, maxDuration: 12 });
+  it('respects different blast ranges and bomb budgets', () => {
+    for (const range of [1, 2, 4, 8]) verifyRound('demo', range, { explosionRange: range, maxBombs: 2 });
   });
   it('defaults to range four with fading blocks and honors explicit fixed ranges', () => {
     expect(verifyRound('sparse', 42).config).toMatchObject({ explosionRange: 4, blockDamage: 'fade' });
     expect(verifyRound('sparse', 42, { explosionRange: 10 }).config.explosionRange).toBe(10);
     expect(verifyRound('sparse', 42, { explosionRange: 1 }).config.explosionRange).toBe(1);
   });
-  it('handles zero bombs and an extremely slow patrol without exceeding the budget', () => {
-    verifyRound('empty', 42, { maxBombs: 0, stepDuration: 100 });
+  it('handles zero bombs and includes the complete patrol in the replay', () => {
+    const replay = verifyRound('empty', 42, { maxBombs: 0, stepDuration: 100 });
+    expect(replay.events.some(event => event.type === 'move')).toBe(true);
+    expect(replay.duration).toBeGreaterThan(60);
+  });
+  it('uses the preview bomb budget even when the round takes longer than a minute', () => {
+    const replay = verifyRound('demo', 42, { maxBombs: 20, fuse: 5 });
+    expect(replay.stats.bombs).toBe(20);
+    expect(replay.duration).toBeGreaterThan(100);
+    expect(replay.config).not.toHaveProperty('maxDuration');
   });
   it('generates byte-identical replays and SVGs from identical inputs', () => {
     const arena = createArena(mockContributions(71));
@@ -190,8 +198,8 @@ describe('simulation invariants', () => {
       for (let seed = 0; seed < 4; seed++) verifyRound(fixture, seed, { mode: 'clear' });
     }, 30000);
   }
-  it('full clear ignores preview bomb and duration caps', () => {
-    const replay = verifyRound('demo', 42, { mode: 'clear', maxBombs: 1, maxDuration: 8 });
+  it('full clear ignores the preview bomb cap', () => {
+    const replay = verifyRound('demo', 42, { mode: 'clear', maxBombs: 1 });
     expect(replay.stats.destroyed).toBe(replay.stats.totalBoxes);
     expect(replay.stats.remaining).toBe(0);
     expect(replay.stats.bombs).toBeGreaterThan(5);
@@ -243,7 +251,7 @@ describe('input validation', () => {
   });
   it('rejects unsafe or nonsensical configuration', () => {
     const arena = createArena(mockContributions());
-    for (const options of [{ maxBombs: -1 }, { seed: NaN }, { explosionRange: 0 }, { explosionRange: 11 }, { explosionRange: 2.5 }, { fuse: Infinity }, { stepDuration: 0 }, { maxDuration: 2 }]) {
+    for (const options of [{ maxBombs: -1 }, { seed: NaN }, { explosionRange: 0 }, { explosionRange: 11 }, { explosionRange: 2.5 }, { fuse: Infinity }, { stepDuration: 0 }]) {
       expect(() => simulate(arena, options)).toThrow();
     }
   });

@@ -38,7 +38,6 @@ export interface GameConfig {
   fuse: number;
   safetyMargin: number;
   blastDuration: number;
-  maxDuration: number;
 }
 
 export interface Replay {

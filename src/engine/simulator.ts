@@ -7,7 +7,7 @@ import type { Arena, GameConfig, GameEvent, Level, Position, Replay } from './ty
 export const DEFAULT_CONFIG: GameConfig = {
   mode: 'clear',
   seed: 42, maxBombs: 5, explosionRange: DEFAULT_RANGE, blockDamage: 'fade', stepDuration: 0.15,
-  fuse: 1.5, safetyMargin: 0.3, blastDuration: 0.48, maxDuration: 22,
+  fuse: 1.5, safetyMargin: 0.3, blastDuration: 0.48,
 };
 
 export function simulate(arena: Arena, options: Partial<GameConfig> = {}): Replay {
@@ -16,10 +16,9 @@ export function simulate(arena: Arena, options: Partial<GameConfig> = {}): Repla
       !['instant', 'fade'].includes(config.blockDamage) ||
       config.maxBombs < 0 || config.maxBombs > 20 ||
       !Number.isInteger(config.explosionRange) || config.explosionRange < 1 || config.explosionRange > RANGE_LIMIT ||
-      ![config.stepDuration, config.fuse, config.blastDuration, config.maxDuration].every(n => Number.isFinite(n) && n > 0) ||
-      !Number.isFinite(config.safetyMargin) || config.safetyMargin < 0 ||
-      config.maxDuration < 8 || config.maxDuration > 60) {
-    throw new Error('Invalid simulation configuration. Preview duration must be 8–60 seconds.');
+      ![config.stepDuration, config.fuse, config.blastDuration].every(n => Number.isFinite(n) && n > 0) ||
+      !Number.isFinite(config.safetyMargin) || config.safetyMargin < 0) {
+    throw new Error('Invalid simulation configuration.');
   }
   const boxes = initialBoxes(arena);
   const levels = new Map(arena.tiles.filter(tile => tile.count > 0).map(tile => [key(tile), tile.level]));
@@ -43,7 +42,6 @@ export function simulate(arena: Arena, options: Partial<GameConfig> = {}): Repla
   let time = 1.2;
   let bombCount = 0;
   const events: GameEvent[] = [];
-  const gameDeadline = config.mode === 'clear' ? Infinity : config.maxDuration - 4.3;
   // Every successful bomb reduces at least one block's remaining durability.
   const durability = config.blockDamage === 'fade' ? [...levels.values()].reduce<number>((sum, level) => sum + level, 0) : totalBoxes;
   const bombLimit = config.mode === 'clear' ? durability : config.maxBombs;
@@ -65,7 +63,6 @@ export function simulate(arena: Arena, options: Partial<GameConfig> = {}): Repla
       const impact = blast(arena, position, boxes, config.explosionRange);
       if (!impact.hits.length) continue;
       const approach = destinations.pathTo(position)!;
-      if (time + approach.length * config.stepDuration + config.fuse + config.blastDuration > gameDeadline) continue;
       // Even a one-step escape cannot beat this upper bound. Skip costly BFS.
       if (best && 3 * impact.hits.length - approach.length - 2 + 0.01 < best.score) continue;
       const hazard = new Set(impact.cells.map(key));
@@ -106,15 +103,10 @@ export function simulate(arena: Arena, options: Partial<GameConfig> = {}): Repla
       const route = map.pathTo(position)!;
       return route.length > longest.length ? route : longest;
     }, []);
-    if (patrol.length) {
-      const availableSteps = Math.max(0, Math.floor((config.maxDuration - 4.3 - time) / config.stepDuration));
-      walk(patrol.slice(0, availableSteps));
-    }
+    walk(patrol);
   }
   const resultTime = Math.max(time + 0.2, 3.2);
-  const duration = config.mode === 'clear'
-    ? Math.max(8, resultTime + 4.1)
-    : Math.min(config.maxDuration, Math.max(8, resultTime + 4.1));
+  const duration = Math.max(8, resultTime + 4.1);
   const restoreTime = duration - 2.6;
   for (let column = 0; column < arena.width; column++) {
     const cells = arena.tiles.filter(tile => tile.x === column && tile.count > 0 && levels.get(key(tile)) !== tile.level);

@@ -37,7 +37,7 @@ async function main(): Promise<void> {
     ['PLAYER_ICON_TRIM', 'player-icon-trim', 'auto'],
     ['BLOCK_DAMAGE', 'block-damage', DEFAULT_CONFIG.blockDamage],
     ['RANGE_MODE', 'range-mode', 'fixed'],
-    ['RANGE', 'range', String(DEFAULT_RANGE)], ['MAX_BOMBS', 'max-bombs', '5'], ['DURATION', 'duration', '22'],
+    ['RANGE', 'range', String(DEFAULT_RANGE)], ['MAX_BOMBS', 'max-bombs', '5'],
   ] as const) {
     const value = process.env[`CONTRIBOOM_INPUT_${input}`] ?? fallback;
     if (value) args.push(`--${flag}`, value);
