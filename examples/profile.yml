@@ -29,16 +29,62 @@ jobs:
         id: contriboom
         uses: ststyin/contriboom@main
         with:
+          # Omitted inputs use their defaults. Uncomment a setting and edit its value to enable it.
+
+          # ===== Data source =====
+          # username: GitHub username. Default: the current repository owner.
           username: ${{ github.repository_owner }}
+          # github-token: GitHub access token. Default: ${{ github.token }} (the workflow token).
           github-token: ${{ secrets.GITHUB_TOKEN }}
+
+          # year: 2008 through the current year. Default: empty (the past 365 days, including today).
+          # Past years cover the full calendar year; the current year covers January 1 through today.
+          # year: '2025'
+
+          # ===== Output location =====
+          # output-dir: Subdirectory inside the repository workspace. Default: artifacts.
+          # This example writes to images/contriboom.
           output-dir: images/contriboom
-          mode: clear
-          # theme: mint
-          # block-damage: instant # Default: fade (lower the block level on each hit).
-          # range-mode: previous-week
-          # range: '4' # Fixed distance or adaptive maximum (1–10).
+
+          # ===== Playback mode =====
+          # mode: clear | preview. Default: clear.
+          # clear: Requires a safe full clear, with no bomb count or loop duration cap.
+          # preview: Limits bombs and loop duration; some blocks may remain uncleared.
+          # mode: clear
+
+          # The following optional limits apply only to preview; the animation may finish earlier.
+          # max-bombs: Integer from 0 to 20. Default: 5 bombs.
+          # max-bombs: '5'
+          # duration: 8 to 60 seconds. Default: 22 (the entire loop, including the rebuild animation).
+          # duration: '22'
+
+          # ===== Explosion rules =====
+          # block-damage: fade | instant. Default: fade.
+          # fade: Lowers a block's level on each hit until it disappears; instant: Destroys it in one hit.
+          # block-damage: fade
+
+          # range-mode: fixed | previous-day | previous-week | previous-month. Default: fixed.
+          # fixed: Uses a fixed range. Other modes use the prior 1 / 7 / 30 days' daily average, rounded up.
+          # range-mode: fixed
+          # range: Integer from 1 to 10 cells. Default: 4. Fixed range in fixed mode; cap in other modes.
+          # range: '4'
+
+          # ===== Appearance =====
+          # theme: Default: github. Choices:
+          # github, light, dark, ocean, sakura, cyberpunk, sunset, nord,
+          # mocha, mint, sky, lavender, peach, sand, rose.
+          # theme: github
+
+          # player-icon: Image path inside the repository. Default: empty (the built-in robot).
+          # Supports PNG / JPEG / GIF / WebP / SVG, up to 2 MiB.
           # player-icon: assets/bomber.png
-          # player-icon-trim: none # Default: auto (trim transparent or near-white margins).
+          # player-icon-trim: auto | none. Default: auto. Applies only to custom player images.
+          # auto: Trims transparent or near-white margins; none: Preserves the entire canvas.
+          # player-icon-trim: auto
+
+          # ===== Randomness =====
+          # seed: A safe integer. Default: 42. Identical data, settings, and seed produce the same replay.
+          # seed: '66'
 
       - name: Commit updated images
         shell: bash
