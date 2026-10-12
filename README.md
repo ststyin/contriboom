@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/readme/logo.svg" width="132" alt="Contriboom logo">
+  <img src="assets/readme/logo.svg" width="104" alt="Contriboom logo">
 </p>
 
 <h1 align="center">Contriboom</h1>
@@ -9,7 +9,7 @@
 Turn your GitHub contribution calendar into a looping SVG animation.
 
 <p align="center">
-  <img src="assets/readme/hero.svg" width="900" alt="A robot clears and rebuilds a contribution calendar">
+  <img src="assets/readme/hero.svg" width="600" alt="A robot clears and rebuilds a contribution calendar">
 </p>
 
 This is an animation generator; it does not modify your contributions or provide a playable game.
@@ -157,15 +157,26 @@ Each run also writes `contributions.json` (the input calendar) and `replay.json`
 
 ## Visual examples
 
-These examples use synthetic calendars rendered by Contriboom's actual simulator and SVG renderer. Most use a compact 20-week calendar and `preview` mode so the differences are easy to inspect. Unless a table heading says otherwise, comparisons use the same data, `seed: '42'`, `range: '4'`, `block-damage: fade`, and `max-bombs: '5'`. Open an SVG directly to restart its animation.
+These examples use synthetic calendars rendered by Contriboom's actual simulator and SVG renderer. Most use a compact 20-week calendar and `preview` mode so the differences are easy to inspect. Unless a caption says otherwise, comparisons use the same data, `seed: '42'`, `range: '4'`, `block-damage: fade`, and `max-bombs: '5'`. Open an SVG directly to restart its animation.
 
 ### Three themes
 
 Change `theme` in `with:`. The same replay is shown in three of the 15 palettes:
 
-| `theme: github` (default) | `theme: dark` | `theme: sakura` |
-| --- | --- | --- |
-| ![GitHub theme](assets/readme/theme-github.svg) | ![Dark theme](assets/readme/theme-dark.svg) | ![Sakura theme](assets/readme/theme-sakura.svg) |
+<p align="center">
+  <strong><code>theme: github</code> (default)</strong><br>
+  <img src="assets/readme/theme-github.svg" width="300" alt="GitHub theme">
+</p>
+
+<p align="center">
+  <strong><code>theme: dark</code></strong><br>
+  <img src="assets/readme/theme-dark.svg" width="300" alt="Dark theme">
+</p>
+
+<p align="center">
+  <strong><code>theme: sakura</code></strong><br>
+  <img src="assets/readme/theme-sakura.svg" width="300" alt="Sakura theme">
+</p>
 
 ### Full clear and preview
 
@@ -175,9 +186,15 @@ mode: preview
 max-bombs: '5'
 ```
 
-| `mode: clear` (default) | `mode: preview` |
-| --- | --- |
-| ![Full clear](assets/readme/mode-clear.svg) | ![Preview with five bombs](assets/readme/theme-github.svg) |
+<p align="center">
+  <strong><code>mode: clear</code> (default)</strong><br>
+  <img src="assets/readme/mode-clear.svg" width="300" alt="Full clear">
+</p>
+
+<p align="center">
+  <strong><code>mode: preview</code></strong><br>
+  <img src="assets/readme/theme-github.svg" width="300" alt="Preview with five bombs">
+</p>
 
 The full-clear demo takes about **154 seconds** to remove all 51 blocks; the preview places 5 bombs and loops after **18 seconds**. Both loop durations are calculated automatically.
 
@@ -185,21 +202,34 @@ The full-clear demo takes about **154 seconds** to remove all 51 blocks; the pre
 
 If the calendar has no empty cells or no safe first bomb placement, an entry animation temporarily opens a **2 × 2** area before the character appears. Existing safe spawn positions are reused. The entry clears as few contribution blocks as possible, counts them in the clearing statistics, and restores their original levels at the end of the loop. It does not count toward `max-bombs`; ordinary bombs still follow `block-damage`. No extra configuration is needed. Single-column calendars open their entire column because a diagonal escape is unavailable.
 
-| Automatic entry on a full calendar (`mode: preview`, `max-bombs: '5'`) |
-| --- |
-| ![Automatic entry on a fully occupied calendar](assets/readme/full-calendar-entry.svg) |
+<p align="center">
+  <strong>Automatic entry on a full calendar (<code>mode: preview</code>, <code>max-bombs: '5'</code>)</strong><br>
+  <img src="assets/readme/full-calendar-entry.svg" width="300" alt="Automatic entry on a fully occupied calendar">
+</p>
 
 ### Preview bomb budget
 
 These previews compare `max-bombs` values of `0`, `1`, `5`, and `20`. A larger budget allows more bomb placements and can produce a longer loop; `0` produces a patrol without bombs.
 
-| `max-bombs: '0'` (patrol only) | `max-bombs: '1'` |
-| --- | --- |
-| ![Patrol without bombs](assets/readme/preview-zero-bombs.svg) | ![One-bomb preview](assets/readme/preview-one-bomb.svg) |
+<p align="center">
+  <strong><code>max-bombs: '0'</code> (patrol only)</strong><br>
+  <img src="assets/readme/preview-zero-bombs.svg" width="300" alt="Patrol without bombs">
+</p>
 
-| `max-bombs: '5'` (default) | `max-bombs: '20'` |
-| --- | --- |
-| ![Five-bomb preview](assets/readme/theme-github.svg) | ![Twenty-bomb preview](assets/readme/preview-twenty-bombs.svg) |
+<p align="center">
+  <strong><code>max-bombs: '1'</code></strong><br>
+  <img src="assets/readme/preview-one-bomb.svg" width="300" alt="One-bomb preview">
+</p>
+
+<p align="center">
+  <strong><code>max-bombs: '5'</code> (default)</strong><br>
+  <img src="assets/readme/theme-github.svg" width="300" alt="Five-bomb preview">
+</p>
+
+<p align="center">
+  <strong><code>max-bombs: '20'</code></strong><br>
+  <img src="assets/readme/preview-twenty-bombs.svg" width="300" alt="Twenty-bomb preview">
+</p>
 
 ### Block damage
 
@@ -207,9 +237,15 @@ These previews compare `max-bombs` values of `0`, `1`, `5`, and `20`. A larger b
 block-damage: instant # Default: fade.
 ```
 
-| `block-damage: fade` (default) | `block-damage: instant` |
-| --- | --- |
-| ![Fading blocks](assets/readme/theme-github.svg) | ![Instant block destruction](assets/readme/damage-instant.svg) |
+<p align="center">
+  <strong><code>block-damage: fade</code> (default)</strong><br>
+  <img src="assets/readme/theme-github.svg" width="300" alt="Fading blocks">
+</p>
+
+<p align="center">
+  <strong><code>block-damage: instant</code></strong><br>
+  <img src="assets/readme/damage-instant.svg" width="300" alt="Instant block destruction">
+</p>
 
 In `fade` mode, a level-4 block needs four hits. `instant` removes it with one hit. Both rebuild the original calendar before the next loop.
 
@@ -222,19 +258,37 @@ range: '4'                # Fixed distance or adaptive cap.
 
 Fixed distance, 1 cell versus 4 cells:
 
-| `range: '1'` | `range: '4'` (default) |
-| --- | --- |
-| ![One-cell explosion range](assets/readme/range-1.svg) | ![Four-cell explosion range](assets/readme/theme-github.svg) |
+<p align="center">
+  <strong><code>range: '1'</code></strong><br>
+  <img src="assets/readme/range-1.svg" width="300" alt="One-cell explosion range">
+</p>
+
+<p align="center">
+  <strong><code>range: '4'</code> (default)</strong><br>
+  <img src="assets/readme/theme-github.svg" width="300" alt="Four-cell explosion range">
+</p>
 
 The same synthetic data produces ranges of 1, 2, and 3 in the adaptive modes below. All use a cap of 4.
 
-| `range-mode: fixed` (default; range 4) | `range-mode: previous-day` (range 1) |
-| --- | --- |
-| ![Fixed range](assets/readme/theme-github.svg) | ![Previous-day range](assets/readme/range-1.svg) |
+<p align="center">
+  <strong><code>range-mode: fixed</code> (default; range 4)</strong><br>
+  <img src="assets/readme/theme-github.svg" width="300" alt="Fixed range">
+</p>
 
-| `range-mode: previous-week` (range 2) | `range-mode: previous-month` (range 3) |
-| --- | --- |
-| ![Previous-week range](assets/readme/range-2.svg) | ![Previous-month range](assets/readme/range-3.svg) |
+<p align="center">
+  <strong><code>range-mode: previous-day</code> (range 1)</strong><br>
+  <img src="assets/readme/range-1.svg" width="300" alt="Previous-day range">
+</p>
+
+<p align="center">
+  <strong><code>range-mode: previous-week</code> (range 2)</strong><br>
+  <img src="assets/readme/range-2.svg" width="300" alt="Previous-week range">
+</p>
+
+<p align="center">
+  <strong><code>range-mode: previous-month</code> (range 3)</strong><br>
+  <img src="assets/readme/range-3.svg" width="300" alt="Previous-month range">
+</p>
 
 ### Custom player and icon margins
 
@@ -249,15 +303,27 @@ player-icon: assets/fox.svg
 player-icon-trim: auto # Default; omit this line to keep auto trimming.
 ```
 
-| `player-icon` omitted (default robot) | `player-icon: assets/fox.svg` |
-| --- | --- |
-| ![Default robot](assets/readme/theme-github.svg) | ![Custom fox character](assets/readme/player-fox-auto.svg) |
+<p align="center">
+  <strong><code>player-icon</code> omitted (default robot)</strong><br>
+  <img src="assets/readme/theme-github.svg" width="300" alt="Default robot">
+</p>
+
+<p align="center">
+  <strong><code>player-icon: assets/fox.svg</code></strong><br>
+  <img src="assets/readme/player-fox-auto.svg" width="300" alt="Custom fox character">
+</p>
 
 Set `player-icon-trim: none` to keep deliberate padding. The same padded fox image is used on both sides below; preserving its margins makes the character appear smaller.
 
-| `player-icon-trim: auto` (default) | `player-icon-trim: none` |
-| --- | --- |
-| ![Auto-trimmed fox](assets/readme/player-fox-auto.svg) | ![Fox with original margins](assets/readme/player-fox-none.svg) |
+<p align="center">
+  <strong><code>player-icon-trim: auto</code> (default)</strong><br>
+  <img src="assets/readme/player-fox-auto.svg" width="300" alt="Auto-trimmed fox">
+</p>
+
+<p align="center">
+  <strong><code>player-icon-trim: none</code></strong><br>
+  <img src="assets/readme/player-fox-none.svg" width="300" alt="Fox with original margins">
+</p>
 
 ### Seeds
 
@@ -265,9 +331,15 @@ Set `player-icon-trim: none` to keep deliberate padding. The same padded fox ima
 seed: '66' # Default: 42.
 ```
 
-| `seed: '42'` (default) | `seed: '66'` |
-| --- | --- |
-| ![Seed 42](assets/readme/theme-github.svg) | ![Seed 66](assets/readme/seed-66.svg) |
+<p align="center">
+  <strong><code>seed: '42'</code> (default)</strong><br>
+  <img src="assets/readme/theme-github.svg" width="300" alt="Seed 42">
+</p>
+
+<p align="center">
+  <strong><code>seed: '66'</code></strong><br>
+  <img src="assets/readme/seed-66.svg" width="300" alt="Seed 66">
+</p>
 
 The input calendar stays the same in this comparison. When using a built-in CLI fixture, `--seed` also controls the generated fixture data.
 

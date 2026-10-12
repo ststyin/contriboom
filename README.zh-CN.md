@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/readme/logo.svg" width="132" alt="Contriboom 标志">
+  <img src="assets/readme/logo.svg" width="104" alt="Contriboom 标志">
 </p>
 
 <h1 align="center">Contriboom</h1>
@@ -9,7 +9,7 @@
 将 GitHub 贡献日历变成循环播放的 SVG 动画。
 
 <p align="center">
-  <img src="assets/readme/hero.svg" width="900" alt="机器人清除贡献方块并恢复日历的动画">
+  <img src="assets/readme/hero.svg" width="600" alt="机器人清除贡献方块并恢复日历的动画">
 </p>
 
 本项目是动画生成工具，不会修改你的贡献记录，也不是可手动操作的游戏。
@@ -157,15 +157,26 @@ jobs:
 
 ## 效果演示
 
-下面的图使用模拟日历，由项目现有的模拟器和 SVG 渲染器生成。大部分使用 20 周的紧凑日历和 `preview` 模式，便于比较。除表头注明的参数外，对比使用相同的数据，以及 `seed: '42'`、`range: '4'`、`block-damage: fade`、`max-bombs: '5'`。直接打开 SVG 可以重新开始播放。
+下面的图使用模拟日历，由项目现有的模拟器和 SVG 渲染器生成。大部分使用 20 周的紧凑日历和 `preview` 模式，便于比较。除图片上方说明的参数外，对比使用相同的数据，以及 `seed: '42'`、`range: '4'`、`block-damage: fade`、`max-bombs: '5'`。直接打开 SVG 可以重新开始播放。
 
 ### 三种主题
 
 修改 `with:` 中的 `theme` 即可。下面展示 15 种主题中的三种，回放内容相同：
 
-| `theme: github`（默认） | `theme: dark` | `theme: sakura` |
-| --- | --- | --- |
-| ![GitHub 主题](assets/readme/theme-github.svg) | ![深色主题](assets/readme/theme-dark.svg) | ![樱花主题](assets/readme/theme-sakura.svg) |
+<p align="center">
+  <strong><code>theme: github</code>（默认）</strong><br>
+  <img src="assets/readme/theme-github.svg" width="300" alt="GitHub 主题">
+</p>
+
+<p align="center">
+  <strong><code>theme: dark</code></strong><br>
+  <img src="assets/readme/theme-dark.svg" width="300" alt="深色主题">
+</p>
+
+<p align="center">
+  <strong><code>theme: sakura</code></strong><br>
+  <img src="assets/readme/theme-sakura.svg" width="300" alt="樱花主题">
+</p>
 
 ### 完整清场与预览
 
@@ -175,9 +186,15 @@ mode: preview
 max-bombs: '5'
 ```
 
-| `mode: clear`（默认） | `mode: preview` |
-| --- | --- |
-| ![完整清场](assets/readme/mode-clear.svg) | ![五枚炸弹预览](assets/readme/theme-github.svg) |
+<p align="center">
+  <strong><code>mode: clear</code>（默认）</strong><br>
+  <img src="assets/readme/mode-clear.svg" width="300" alt="完整清场">
+</p>
+
+<p align="center">
+  <strong><code>mode: preview</code></strong><br>
+  <img src="assets/readme/theme-github.svg" width="300" alt="五枚炸弹预览">
+</p>
 
 完整清场示例约需 **154 秒**清除全部 51 个方块；预览示例放置 5 枚炸弹，**18 秒**后开始下一轮。两种模式的循环时长均自动计算。
 
@@ -185,21 +202,34 @@ max-bombs: '5'
 
 如果日历没有空格，或无法安全放置第一颗炸弹，会先通过入场动画临时腾出 **2 × 2** 区域，再让角色出现。已有安全出生位时沿用原来的方式。入场会尽量少腾空贡献方块，将其计入清除统计，并在循环结束时恢复原始等级。入场不占用 `max-bombs`，普通炸弹仍遵循 `block-damage`，无需额外配置。单列日历无法提供对角撤离位置，因此会腾出整列。
 
-| 全满日历自动入场（`mode: preview`、`max-bombs: '5'`） |
-| --- |
-| ![全满贡献日历的自动入场](assets/readme/full-calendar-entry.svg) |
+<p align="center">
+  <strong>全满日历自动入场（<code>mode: preview</code>、<code>max-bombs: '5'</code>）</strong><br>
+  <img src="assets/readme/full-calendar-entry.svg" width="300" alt="全满贡献日历的自动入场">
+</p>
 
 ### 预览炸弹上限
 
 下面分别设置 `max-bombs` 为 `0`、`1`、`5`、`20`。上限越大，允许放置的炸弹越多，循环也可能更长；`0` 表示只巡逻、不放炸弹。
 
-| `max-bombs: '0'`（只巡逻） | `max-bombs: '1'` |
-| --- | --- |
-| ![不放炸弹的巡逻](assets/readme/preview-zero-bombs.svg) | ![一枚炸弹预览](assets/readme/preview-one-bomb.svg) |
+<p align="center">
+  <strong><code>max-bombs: '0'</code>（只巡逻）</strong><br>
+  <img src="assets/readme/preview-zero-bombs.svg" width="300" alt="不放炸弹的巡逻">
+</p>
 
-| `max-bombs: '5'`（默认） | `max-bombs: '20'` |
-| --- | --- |
-| ![五枚炸弹预览](assets/readme/theme-github.svg) | ![二十枚炸弹预览](assets/readme/preview-twenty-bombs.svg) |
+<p align="center">
+  <strong><code>max-bombs: '1'</code></strong><br>
+  <img src="assets/readme/preview-one-bomb.svg" width="300" alt="一枚炸弹预览">
+</p>
+
+<p align="center">
+  <strong><code>max-bombs: '5'</code>（默认）</strong><br>
+  <img src="assets/readme/theme-github.svg" width="300" alt="五枚炸弹预览">
+</p>
+
+<p align="center">
+  <strong><code>max-bombs: '20'</code></strong><br>
+  <img src="assets/readme/preview-twenty-bombs.svg" width="300" alt="二十枚炸弹预览">
+</p>
 
 ### 方块伤害
 
@@ -207,9 +237,15 @@ max-bombs: '5'
 block-damage: instant # Default: fade.
 ```
 
-| `block-damage: fade`（默认） | `block-damage: instant` |
-| --- | --- |
-| ![逐级变浅](assets/readme/theme-github.svg) | ![一次清除](assets/readme/damage-instant.svg) |
+<p align="center">
+  <strong><code>block-damage: fade</code>（默认）</strong><br>
+  <img src="assets/readme/theme-github.svg" width="300" alt="逐级变浅">
+</p>
+
+<p align="center">
+  <strong><code>block-damage: instant</code></strong><br>
+  <img src="assets/readme/damage-instant.svg" width="300" alt="一次清除">
+</p>
 
 `fade` 模式下，等级为 4 的方块需要命中四次；`instant` 模式命中一次就消失。两种模式都会在下一轮之前恢复原始日历。
 
@@ -222,19 +258,37 @@ range: '4'                # Fixed distance or adaptive cap.
 
 固定距离 1 格和 4 格的对比：
 
-| `range: '1'` | `range: '4'`（默认） |
-| --- | --- |
-| ![一格爆炸范围](assets/readme/range-1.svg) | ![四格爆炸范围](assets/readme/theme-github.svg) |
+<p align="center">
+  <strong><code>range: '1'</code></strong><br>
+  <img src="assets/readme/range-1.svg" width="300" alt="一格爆炸范围">
+</p>
+
+<p align="center">
+  <strong><code>range: '4'</code>（默认）</strong><br>
+  <img src="assets/readme/theme-github.svg" width="300" alt="四格爆炸范围">
+</p>
 
 下面三种自适应模式根据相同的模拟数据，分别得到 1、2、3 格的实际范围；上限都为 4 格。
 
-| `range-mode: fixed`（默认，范围 4） | `range-mode: previous-day`（范围 1） |
-| --- | --- |
-| ![固定范围](assets/readme/theme-github.svg) | ![前一天的范围](assets/readme/range-1.svg) |
+<p align="center">
+  <strong><code>range-mode: fixed</code>（默认，范围 4）</strong><br>
+  <img src="assets/readme/theme-github.svg" width="300" alt="固定范围">
+</p>
 
-| `range-mode: previous-week`（范围 2） | `range-mode: previous-month`（范围 3） |
-| --- | --- |
-| ![前七天的范围](assets/readme/range-2.svg) | ![前三十天的范围](assets/readme/range-3.svg) |
+<p align="center">
+  <strong><code>range-mode: previous-day</code>（范围 1）</strong><br>
+  <img src="assets/readme/range-1.svg" width="300" alt="前一天的范围">
+</p>
+
+<p align="center">
+  <strong><code>range-mode: previous-week</code>（范围 2）</strong><br>
+  <img src="assets/readme/range-2.svg" width="300" alt="前七天的范围">
+</p>
+
+<p align="center">
+  <strong><code>range-mode: previous-month</code>（范围 3）</strong><br>
+  <img src="assets/readme/range-3.svg" width="300" alt="前三十天的范围">
+</p>
 
 ### 自定义角色与留白
 
@@ -249,15 +303,27 @@ player-icon: assets/fox.svg
 player-icon-trim: auto # Default; omit this line to keep auto trimming.
 ```
 
-| 不填写 `player-icon`（默认机器人） | `player-icon: assets/fox.svg` |
-| --- | --- |
-| ![默认机器人](assets/readme/theme-github.svg) | ![自定义狐狸](assets/readme/player-fox-auto.svg) |
+<p align="center">
+  <strong>不填写 <code>player-icon</code>（默认机器人）</strong><br>
+  <img src="assets/readme/theme-github.svg" width="300" alt="默认机器人">
+</p>
+
+<p align="center">
+  <strong><code>player-icon: assets/fox.svg</code></strong><br>
+  <img src="assets/readme/player-fox-auto.svg" width="300" alt="自定义狐狸">
+</p>
 
 如果想保留图片原有留白，设置 `player-icon-trim: none`。下面两侧使用同一张带留白的狐狸图片，保留留白后角色看起来更小。
 
-| `player-icon-trim: auto`（默认） | `player-icon-trim: none` |
-| --- | --- |
-| ![自动裁剪留白](assets/readme/player-fox-auto.svg) | ![保留原始留白](assets/readme/player-fox-none.svg) |
+<p align="center">
+  <strong><code>player-icon-trim: auto</code>（默认）</strong><br>
+  <img src="assets/readme/player-fox-auto.svg" width="300" alt="自动裁剪留白">
+</p>
+
+<p align="center">
+  <strong><code>player-icon-trim: none</code></strong><br>
+  <img src="assets/readme/player-fox-none.svg" width="300" alt="保留原始留白">
+</p>
 
 ### 随机种子
 
@@ -265,9 +331,15 @@ player-icon-trim: auto # Default; omit this line to keep auto trimming.
 seed: '66' # Default: 42.
 ```
 
-| `seed: '42'`（默认） | `seed: '66'` |
-| --- | --- |
-| ![种子 42](assets/readme/theme-github.svg) | ![种子 66](assets/readme/seed-66.svg) |
+<p align="center">
+  <strong><code>seed: '42'</code>（默认）</strong><br>
+  <img src="assets/readme/theme-github.svg" width="300" alt="种子 42">
+</p>
+
+<p align="center">
+  <strong><code>seed: '66'</code></strong><br>
+  <img src="assets/readme/seed-66.svg" width="300" alt="种子 66">
+</p>
 
 这里保持输入日历不变。使用 CLI 内置示例数据时，`--seed` 也会影响示例数据本身。
 
