@@ -1,0 +1,414 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="450" height="164" viewBox="0 0 450 164" role="img" aria-labelledby="title desc">
+<title id="title">Contribution calendar</title>
+<desc id="desc">A robot clears the contribution calendar, then rebuilds it.</desc>
+<defs>
+  <clipPath id="calendar-clip"><rect x="6" y="6" width="438" height="152"/></clipPath>
+  <g id="robot">
+    <ellipse cx="0" cy="9" rx="9" ry="3" fill="#000" opacity=".24"/>
+    <path d="M-7 4h5v5h-5zm9 0h5v5H2z" fill="#c86a30"/>
+    <rect x="-6" y="-1" width="12" height="8" rx="2" fill="#ff9b50"/>
+    <path d="M-8 0v4m16-4v4" stroke="#ffbd76" stroke-width="3" stroke-linecap="round"/>
+    <rect x="-8" y="-10" width="16" height="12" rx="4" fill="#f4eee0" stroke="#27323f" stroke-width="1.5"/>
+    <rect x="-5.5" y="-7" width="11" height="5" rx="2" fill="#243c46"/>
+    <path d="M-3-5h1m4 0h1" stroke="#8de1d8" stroke-width="1.6" stroke-linecap="round"/>
+    <path d="M0-10v-3" stroke="#ff9b50" stroke-width="1.5"/>
+    <circle cy="-14" r="1.8" fill="#ffbd76"/>
+  </g>
+  <g id="bomb-shape">
+    <ellipse cy="7" rx="9" ry="3" fill="#000" opacity=".25"/>
+    <circle r="7.5" fill="#303d4c" stroke="#ffa351" stroke-width="1.4"/>
+    <path d="M2-7q0-5 5-5" fill="none" stroke="#ffc67e" stroke-width="2"/>
+    <circle cx="8" cy="-12" r="2.4" fill="#ffdf8c"/>
+    <path d="M-4-3q-2 2-1 4" stroke="#758798" stroke-width="2" fill="none" stroke-linecap="round"/>
+  </g>
+  <g id="flame">
+    <rect x="-10" y="-10" width="20" height="20" rx="5" fill="#ff9551" opacity=".8"/>
+    <path d="M0-9 3-4 8-3 5 1 7 6 2 5 0 10-3 5-8 4-5 0-7-5-2-4Z" fill="#ffd481"/>
+    <path d="m0-4 3 4-3 5-3-5Z" fill="#fff5c6"/>
+  </g>
+</defs>
+<g id="floor">
+<rect x="6" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="6" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="6" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="6" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="6" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="6" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="6" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="28" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="28" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="28" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="28" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="28" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="28" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="28" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="50" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="50" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="50" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="50" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="50" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="50" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="50" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="72" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="72" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="72" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="72" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="72" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="72" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="72" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="94" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="94" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="94" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="94" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="94" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="94" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="94" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="116" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="116" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="116" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="116" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="116" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="116" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="116" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="138" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="138" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="138" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="138" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="138" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="138" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="138" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="160" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="160" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="160" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="160" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="160" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="160" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="160" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="182" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="182" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="182" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="182" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="182" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="182" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="182" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="204" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="204" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="204" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="204" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="204" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="204" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="204" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="226" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="226" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="226" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="226" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="226" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="226" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="226" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="248" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="248" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="248" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="248" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="248" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="248" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="248" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="270" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="270" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="270" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="270" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="270" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="270" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="270" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="292" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="292" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="292" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="292" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="292" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="292" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="292" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="314" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="314" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="314" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="314" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="314" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="314" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="314" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="336" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="336" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="336" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="336" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="336" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="336" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="336" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="358" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="358" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="358" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="358" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="358" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="358" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="358" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="380" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="380" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="380" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="380" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="380" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="380" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="380" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="402" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="402" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="402" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="402" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="402" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="402" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="402" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="424" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="424" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="424" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="424" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="424" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="424" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="424" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+</g><g id="contributions">
+<g data-cell="0,1"><title>2025-01-06: 3 contributions</title>
+<rect x="6" y="28" width="20" height="20" rx="3" fill="#2da44e"/>
+<path d="M9 31h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="0,2"><title>2025-01-07: 1 contributions</title>
+<rect x="6" y="50" width="20" height="20" rx="3" fill="#aceebb"><animate attributeName="fill" dur="8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.3375;0.675;1" values="#aceebb;#eff2f5;#aceebb;#aceebb"/></rect>
+<path d="M9 53h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+<animate attributeName="opacity" dur="8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.3375;0.675;1" values="1;0;1;1"/></g>
+<g data-cell="1,5"><title>2025-01-17: 3 contributions</title>
+<rect x="28" y="116" width="20" height="20" rx="3" fill="#2da44e"/>
+<path d="M31 119h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="3,3"><title>2025-01-29: 1 contributions</title>
+<rect x="72" y="72" width="20" height="20" rx="3" fill="#aceebb"/>
+<path d="M75 75h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="4,3"><title>2025-02-05: 1 contributions</title>
+<rect x="94" y="72" width="20" height="20" rx="3" fill="#aceebb"><animate attributeName="fill" dur="8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.3375;0.717105;1" values="#aceebb;#eff2f5;#aceebb;#aceebb"/></rect>
+<path d="M97 75h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+<animate attributeName="opacity" dur="8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.3375;0.717105;1" values="1;0;1;1"/></g>
+<g data-cell="4,5"><title>2025-02-07: 4 contributions</title>
+<rect x="94" y="116" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M97 119h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="5,1"><title>2025-02-10: 3 contributions</title>
+<rect x="116" y="28" width="20" height="20" rx="3" fill="#2da44e"/>
+<path d="M119 31h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="5,2"><title>2025-02-11: 2 contributions</title>
+<rect x="116" y="50" width="20" height="20" rx="3" fill="#4ac26b"><animate attributeName="fill" dur="8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.3375;0.727632;1" values="#4ac26b;#aceebb;#4ac26b;#4ac26b"/></rect>
+<path d="M119 53h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="5,4"><title>2025-02-13: 4 contributions</title>
+<rect x="116" y="94" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M119 97h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="6,3"><title>2025-02-19: 1 contributions</title>
+<rect x="138" y="72" width="20" height="20" rx="3" fill="#aceebb"/>
+<path d="M141 75h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="7,1"><title>2025-02-24: 2 contributions</title>
+<rect x="160" y="28" width="20" height="20" rx="3" fill="#4ac26b"/>
+<path d="M163 31h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="7,5"><title>2025-02-28: 4 contributions</title>
+<rect x="160" y="116" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M163 119h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="8,2"><title>2025-03-04: 3 contributions</title>
+<rect x="182" y="50" width="20" height="20" rx="3" fill="#2da44e"/>
+<path d="M185 53h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="8,3"><title>2025-03-05: 2 contributions</title>
+<rect x="182" y="72" width="20" height="20" rx="3" fill="#4ac26b"/>
+<path d="M185 75h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="9,5"><title>2025-03-14: 3 contributions</title>
+<rect x="204" y="116" width="20" height="20" rx="3" fill="#2da44e"/>
+<path d="M207 119h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="10,2"><title>2025-03-18: 4 contributions</title>
+<rect x="226" y="50" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M229 53h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="10,3"><title>2025-03-19: 3 contributions</title>
+<rect x="226" y="72" width="20" height="20" rx="3" fill="#2da44e"/>
+<path d="M229 75h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="10,4"><title>2025-03-20: 2 contributions</title>
+<rect x="226" y="94" width="20" height="20" rx="3" fill="#4ac26b"/>
+<path d="M229 97h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="11,1"><title>2025-03-24: 2 contributions</title>
+<rect x="248" y="28" width="20" height="20" rx="3" fill="#4ac26b"/>
+<path d="M251 31h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="11,3"><title>2025-03-26: 4 contributions</title>
+<rect x="248" y="72" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M251 75h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="12,5"><title>2025-04-04: 3 contributions</title>
+<rect x="270" y="116" width="20" height="20" rx="3" fill="#2da44e"/>
+<path d="M273 119h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="15,4"><title>2025-04-24: 3 contributions</title>
+<rect x="336" y="94" width="20" height="20" rx="3" fill="#2da44e"/>
+<path d="M339 97h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="15,5"><title>2025-04-25: 3 contributions</title>
+<rect x="336" y="116" width="20" height="20" rx="3" fill="#2da44e"/>
+<path d="M339 119h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="15,6"><title>2025-04-26: 3 contributions</title>
+<rect x="336" y="138" width="20" height="20" rx="3" fill="#2da44e"/>
+<path d="M339 141h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="16,0"><title>2025-04-27: 3 contributions</title>
+<rect x="358" y="6" width="20" height="20" rx="3" fill="#2da44e"/>
+<path d="M361 9h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="16,1"><title>2025-04-28: 3 contributions</title>
+<rect x="358" y="28" width="20" height="20" rx="3" fill="#2da44e"/>
+<path d="M361 31h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="16,2"><title>2025-04-29: 3 contributions</title>
+<rect x="358" y="50" width="20" height="20" rx="3" fill="#2da44e"/>
+<path d="M361 53h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="16,3"><title>2025-04-30: 3 contributions</title>
+<rect x="358" y="72" width="20" height="20" rx="3" fill="#2da44e"/>
+<path d="M361 75h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="16,4"><title>2025-05-01: 3 contributions</title>
+<rect x="358" y="94" width="20" height="20" rx="3" fill="#2da44e"/>
+<path d="M361 97h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="16,5"><title>2025-05-02: 3 contributions</title>
+<rect x="358" y="116" width="20" height="20" rx="3" fill="#2da44e"/>
+<path d="M361 119h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="16,6"><title>2025-05-03: 3 contributions</title>
+<rect x="358" y="138" width="20" height="20" rx="3" fill="#2da44e"/>
+<path d="M361 141h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="17,0"><title>2025-05-04: 3 contributions</title>
+<rect x="380" y="6" width="20" height="20" rx="3" fill="#2da44e"/>
+<path d="M383 9h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="17,1"><title>2025-05-05: 3 contributions</title>
+<rect x="380" y="28" width="20" height="20" rx="3" fill="#2da44e"/>
+<path d="M383 31h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="17,2"><title>2025-05-06: 3 contributions</title>
+<rect x="380" y="50" width="20" height="20" rx="3" fill="#2da44e"/>
+<path d="M383 53h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="17,3"><title>2025-05-07: 3 contributions</title>
+<rect x="380" y="72" width="20" height="20" rx="3" fill="#2da44e"/>
+<path d="M383 75h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="17,4"><title>2025-05-08: 3 contributions</title>
+<rect x="380" y="94" width="20" height="20" rx="3" fill="#2da44e"/>
+<path d="M383 97h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="17,5"><title>2025-05-09: 3 contributions</title>
+<rect x="380" y="116" width="20" height="20" rx="3" fill="#2da44e"/>
+<path d="M383 119h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="17,6"><title>2025-05-10: 3 contributions</title>
+<rect x="380" y="138" width="20" height="20" rx="3" fill="#2da44e"/>
+<path d="M383 141h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="18,0"><title>2025-05-11: 3 contributions</title>
+<rect x="402" y="6" width="20" height="20" rx="3" fill="#2da44e"/>
+<path d="M405 9h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="18,1"><title>2025-05-12: 3 contributions</title>
+<rect x="402" y="28" width="20" height="20" rx="3" fill="#2da44e"/>
+<path d="M405 31h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="18,2"><title>2025-05-13: 3 contributions</title>
+<rect x="402" y="50" width="20" height="20" rx="3" fill="#2da44e"/>
+<path d="M405 53h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="18,3"><title>2025-05-14: 3 contributions</title>
+<rect x="402" y="72" width="20" height="20" rx="3" fill="#2da44e"/>
+<path d="M405 75h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="18,4"><title>2025-05-15: 3 contributions</title>
+<rect x="402" y="94" width="20" height="20" rx="3" fill="#2da44e"/>
+<path d="M405 97h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="18,5"><title>2025-05-16: 3 contributions</title>
+<rect x="402" y="116" width="20" height="20" rx="3" fill="#2da44e"/>
+<path d="M405 119h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="18,6"><title>2025-05-17: 2 contributions</title>
+<rect x="402" y="138" width="20" height="20" rx="3" fill="#4ac26b"/>
+<path d="M405 141h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="19,0"><title>2025-05-18: 2 contributions</title>
+<rect x="424" y="6" width="20" height="20" rx="3" fill="#4ac26b"/>
+<path d="M427 9h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="19,1"><title>2025-05-19: 2 contributions</title>
+<rect x="424" y="28" width="20" height="20" rx="3" fill="#4ac26b"/>
+<path d="M427 31h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="19,2"><title>2025-05-20: 2 contributions</title>
+<rect x="424" y="50" width="20" height="20" rx="3" fill="#4ac26b"/>
+<path d="M427 53h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="19,3"><title>2025-05-21: 2 contributions</title>
+<rect x="424" y="72" width="20" height="20" rx="3" fill="#4ac26b"/>
+<path d="M427 75h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="19,4"><title>2025-05-22: 2 contributions</title>
+<rect x="424" y="94" width="20" height="20" rx="3" fill="#4ac26b"/>
+<path d="M427 97h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="19,5"><title>2025-05-23: 1 contributions</title>
+<rect x="424" y="116" width="20" height="20" rx="3" fill="#aceebb"/>
+<path d="M427 119h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+</g>
+<g clip-path="url(#calendar-clip)">
+<g data-blast="0" opacity="0"><animate attributeName="opacity" dur="8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.3375;0.3975;1" values="0;1;0;0"/>
+<use href="#flame" transform="translate(104 60)"/>
+<use href="#flame" transform="translate(126 60)"/>
+<use href="#flame" transform="translate(82 60)"/>
+<use href="#flame" transform="translate(60 60)"/>
+<use href="#flame" transform="translate(38 60)"/>
+<use href="#flame" transform="translate(16 60)"/>
+<use href="#flame" transform="translate(104 82)"/>
+<use href="#flame" transform="translate(104 38)"/>
+<use href="#flame" transform="translate(104 16)"/>
+</g>
+<g opacity="0"><animate attributeName="opacity" dur="8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.3375;0.40625;1" values="0;1;0;0"/>
+<g transform="translate(16 60)"><animateTransform attributeName="transform" type="translate" dur="8s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.3375;0.40625;1" values="16 60;16 60;7 47;16 60"/><rect x="-1.5" y="-1.5" width="3" height="3" rx=".5" fill="#b65a15"/></g></g>
+<g opacity="0"><animate attributeName="opacity" dur="8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.3375;0.40625;1" values="0;1;0;0"/>
+<g transform="translate(16 60)"><animateTransform attributeName="transform" type="translate" dur="8s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.3375;0.40625;1" values="16 60;16 60;25 49;16 60"/><rect x="-1.5" y="-1.5" width="3" height="3" rx=".5" fill="#b65a15"/></g></g>
+<g opacity="0"><animate attributeName="opacity" dur="8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.3375;0.40625;1" values="0;1;0;0"/>
+<g transform="translate(16 60)"><animateTransform attributeName="transform" type="translate" dur="8s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.3375;0.40625;1" values="16 60;16 60;5 68;16 60"/><rect x="-1.5" y="-1.5" width="3" height="3" rx=".5" fill="#b65a15"/></g></g>
+<g opacity="0"><animate attributeName="opacity" dur="8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.3375;0.40625;1" values="0;1;0;0"/>
+<g transform="translate(16 60)"><animateTransform attributeName="transform" type="translate" dur="8s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.3375;0.40625;1" values="16 60;16 60;28 66;16 60"/><rect x="-1.5" y="-1.5" width="3" height="3" rx=".5" fill="#b65a15"/></g></g>
+<g opacity="0"><animate attributeName="opacity" dur="8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.3375;0.40625;1" values="0;1;0;0"/>
+<g transform="translate(104 82)"><animateTransform attributeName="transform" type="translate" dur="8s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.3375;0.40625;1" values="104 82;104 82;95 69;104 82"/><rect x="-1.5" y="-1.5" width="3" height="3" rx=".5" fill="#b65a15"/></g></g>
+<g opacity="0"><animate attributeName="opacity" dur="8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.3375;0.40625;1" values="0;1;0;0"/>
+<g transform="translate(104 82)"><animateTransform attributeName="transform" type="translate" dur="8s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.3375;0.40625;1" values="104 82;104 82;113 71;104 82"/><rect x="-1.5" y="-1.5" width="3" height="3" rx=".5" fill="#b65a15"/></g></g>
+<g opacity="0"><animate attributeName="opacity" dur="8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.3375;0.40625;1" values="0;1;0;0"/>
+<g transform="translate(104 82)"><animateTransform attributeName="transform" type="translate" dur="8s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.3375;0.40625;1" values="104 82;104 82;93 90;104 82"/><rect x="-1.5" y="-1.5" width="3" height="3" rx=".5" fill="#b65a15"/></g></g>
+<g opacity="0"><animate attributeName="opacity" dur="8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.3375;0.40625;1" values="0;1;0;0"/>
+<g transform="translate(104 82)"><animateTransform attributeName="transform" type="translate" dur="8s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.3375;0.40625;1" values="104 82;104 82;116 88;104 82"/><rect x="-1.5" y="-1.5" width="3" height="3" rx=".5" fill="#b65a15"/></g></g>
+<g data-bomb="0" transform="translate(104 60)" opacity="0"><animate attributeName="opacity" dur="8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.15;0.3375;1" values="0;1;0;0"/><circle r="7.5" fill="none" stroke="#b65a15" stroke-width="2" opacity=".5"><animate attributeName="r" dur="8s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.15;0.16875;0.1875;0.20625;0.225;0.24375;0.2625;0.28125;0.3;0.31875;0.3375;1" values="7.5;7.5;9;7.5;9;7.5;9;7.5;9;7.5;9;7.5;7.5"/></circle><use href="#bomb-shape"/></g>
+<rect id="rebuild-sweep" x="0" y="4" width="5" height="154" rx="2" fill="#b65a15" opacity="0">
+<animate attributeName="opacity" dur="8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.675;0.875;1" values="0;1;0;0"/>
+<animate attributeName="x" dur="8s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.675;0.875;1" values="0;0;446;0"/></rect>
+</g>
+<g id="player" transform="translate(104 60)">
+<animateTransform attributeName="transform" type="translate" dur="8s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.15;0.16875;0.1875;0.675;0.9125;1" values="104 60;104 60;104 38;82 38;82 38;104 60;104 60"/>
+<animate attributeName="opacity" dur="8s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.66;0.675;0.9125;0.94375;1" values="1;1;0;0;1;1"/>
+<use href="#robot"/></g>
+</svg>

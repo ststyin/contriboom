@@ -19,6 +19,7 @@ coverage/
 *.doc
 *.docx
 !/README.md
+!/README.zh-CN.md
 /docs/
 
 # Local configuration
