@@ -1,0 +1,798 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="450" height="164" viewBox="0 0 450 164" role="img" aria-labelledby="title desc">
+<title id="title">Contribution calendar</title>
+<desc id="desc">A robot clears the contribution calendar, then rebuilds it.</desc>
+<defs>
+  <clipPath id="calendar-clip"><rect x="6" y="6" width="438" height="152"/></clipPath>
+  <g id="robot">
+    <ellipse cx="0" cy="9" rx="9" ry="3" fill="#000" opacity=".24"/>
+    <path d="M-7 4h5v5h-5zm9 0h5v5H2z" fill="#c86a30"/>
+    <rect x="-6" y="-1" width="12" height="8" rx="2" fill="#ff9b50"/>
+    <path d="M-8 0v4m16-4v4" stroke="#ffbd76" stroke-width="3" stroke-linecap="round"/>
+    <rect x="-8" y="-10" width="16" height="12" rx="4" fill="#f4eee0" stroke="#27323f" stroke-width="1.5"/>
+    <rect x="-5.5" y="-7" width="11" height="5" rx="2" fill="#243c46"/>
+    <path d="M-3-5h1m4 0h1" stroke="#8de1d8" stroke-width="1.6" stroke-linecap="round"/>
+    <path d="M0-10v-3" stroke="#ff9b50" stroke-width="1.5"/>
+    <circle cy="-14" r="1.8" fill="#ffbd76"/>
+  </g>
+  <g id="bomb-shape">
+    <ellipse cy="7" rx="9" ry="3" fill="#000" opacity=".25"/>
+    <circle r="7.5" fill="#303d4c" stroke="#ffa351" stroke-width="1.4"/>
+    <path d="M2-7q0-5 5-5" fill="none" stroke="#ffc67e" stroke-width="2"/>
+    <circle cx="8" cy="-12" r="2.4" fill="#ffdf8c"/>
+    <path d="M-4-3q-2 2-1 4" stroke="#758798" stroke-width="2" fill="none" stroke-linecap="round"/>
+  </g>
+  <g id="flame">
+    <rect x="-10" y="-10" width="20" height="20" rx="5" fill="#ff9551" opacity=".8"/>
+    <path d="M0-9 3-4 8-3 5 1 7 6 2 5 0 10-3 5-8 4-5 0-7-5-2-4Z" fill="#ffd481"/>
+    <path d="m0-4 3 4-3 5-3-5Z" fill="#fff5c6"/>
+  </g>
+</defs>
+<g id="floor">
+<rect x="6" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="6" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="6" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="6" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="6" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="6" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="6" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="28" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="28" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="28" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="28" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="28" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="28" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="28" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="50" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="50" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="50" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="50" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="50" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="50" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="50" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="72" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="72" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="72" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="72" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="72" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="72" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="72" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="94" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="94" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="94" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="94" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="94" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="94" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="94" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="116" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="116" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="116" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="116" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="116" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="116" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="116" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="138" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="138" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="138" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="138" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="138" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="138" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="138" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="160" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="160" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="160" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="160" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="160" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="160" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="160" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="182" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="182" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="182" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="182" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="182" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="182" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="182" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="204" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="204" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="204" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="204" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="204" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="204" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="204" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="226" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="226" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="226" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="226" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="226" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="226" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="226" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="248" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="248" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="248" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="248" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="248" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="248" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="248" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="270" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="270" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="270" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="270" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="270" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="270" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="270" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="292" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="292" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="292" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="292" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="292" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="292" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="292" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="314" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="314" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="314" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="314" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="314" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="314" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="314" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="336" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="336" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="336" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="336" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="336" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="336" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="336" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="358" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="358" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="358" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="358" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="358" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="358" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="358" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="380" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="380" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="380" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="380" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="380" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="380" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="380" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="402" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="402" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="402" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="402" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="402" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="402" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="402" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="424" y="6" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="424" y="28" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="424" y="50" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="424" y="72" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="424" y="94" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="424" y="116" width="20" height="20" rx="3" fill="#eff2f5"/>
+<rect x="424" y="138" width="20" height="20" rx="3" fill="#eff2f5"/>
+</g><g id="contributions">
+<g data-cell="0,0"><title>2025-01-05: 12 contributions</title>
+<rect x="6" y="6" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M9 9h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="0,1"><title>2025-01-06: 12 contributions</title>
+<rect x="6" y="28" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M9 31h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="0,2"><title>2025-01-07: 12 contributions</title>
+<rect x="6" y="50" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M9 53h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="0,3"><title>2025-01-08: 12 contributions</title>
+<rect x="6" y="72" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M9 75h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="0,4"><title>2025-01-09: 12 contributions</title>
+<rect x="6" y="94" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M9 97h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="0,5"><title>2025-01-10: 12 contributions</title>
+<rect x="6" y="116" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M9 119h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="0,6"><title>2025-01-11: 12 contributions</title>
+<rect x="6" y="138" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M9 141h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="1,0"><title>2025-01-12: 12 contributions</title>
+<rect x="28" y="6" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M31 9h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="1,1"><title>2025-01-13: 12 contributions</title>
+<rect x="28" y="28" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M31 31h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="1,2"><title>2025-01-14: 12 contributions</title>
+<rect x="28" y="50" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M31 53h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="1,3"><title>2025-01-15: 12 contributions</title>
+<rect x="28" y="72" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M31 75h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="1,4"><title>2025-01-16: 12 contributions</title>
+<rect x="28" y="94" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M31 97h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="1,5"><title>2025-01-17: 12 contributions</title>
+<rect x="28" y="116" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M31 119h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="1,6"><title>2025-01-18: 12 contributions</title>
+<rect x="28" y="138" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M31 141h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="2,0"><title>2025-01-19: 12 contributions</title>
+<rect x="50" y="6" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M53 9h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="2,1"><title>2025-01-20: 12 contributions</title>
+<rect x="50" y="28" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M53 31h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="2,2"><title>2025-01-21: 12 contributions</title>
+<rect x="50" y="50" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M53 53h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="2,3"><title>2025-01-22: 12 contributions</title>
+<rect x="50" y="72" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M53 75h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="2,4"><title>2025-01-23: 12 contributions</title>
+<rect x="50" y="94" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M53 97h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="2,5"><title>2025-01-24: 12 contributions</title>
+<rect x="50" y="116" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M53 119h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="2,6"><title>2025-01-25: 12 contributions</title>
+<rect x="50" y="138" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M53 141h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="3,0"><title>2025-01-26: 12 contributions</title>
+<rect x="72" y="6" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M75 9h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="3,1"><title>2025-01-27: 12 contributions</title>
+<rect x="72" y="28" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M75 31h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="3,2"><title>2025-01-28: 12 contributions</title>
+<rect x="72" y="50" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M75 53h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="3,3"><title>2025-01-29: 12 contributions</title>
+<rect x="72" y="72" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M75 75h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="3,4"><title>2025-01-30: 12 contributions</title>
+<rect x="72" y="94" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M75 97h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="3,5"><title>2025-01-31: 12 contributions</title>
+<rect x="72" y="116" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M75 119h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="3,6"><title>2025-02-01: 12 contributions</title>
+<rect x="72" y="138" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M75 141h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="4,0"><title>2025-02-02: 12 contributions</title>
+<rect x="94" y="6" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M97 9h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="4,1"><title>2025-02-03: 12 contributions</title>
+<rect x="94" y="28" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M97 31h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="4,2"><title>2025-02-04: 12 contributions</title>
+<rect x="94" y="50" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M97 53h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="4,3"><title>2025-02-05: 12 contributions</title>
+<rect x="94" y="72" width="20" height="20" rx="3" fill="#116329"><animate attributeName="fill" dur="16.8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.160714;0.429762;0.69881;0.865288;1" values="#116329;#2da44e;#4ac26b;#aceebb;#116329;#116329"/></rect>
+<path d="M97 75h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="4,4"><title>2025-02-06: 12 contributions</title>
+<rect x="94" y="94" width="20" height="20" rx="3" fill="#116329"><animate attributeName="fill" dur="16.8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.295238;0.564286;0.865288;1" values="#116329;#2da44e;#4ac26b;#116329;#116329"/></rect>
+<path d="M97 97h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="4,5"><title>2025-02-07: 12 contributions</title>
+<rect x="94" y="116" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M97 119h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="4,6"><title>2025-02-08: 12 contributions</title>
+<rect x="94" y="138" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M97 141h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="5,0"><title>2025-02-09: 12 contributions</title>
+<rect x="116" y="6" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M119 9h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="5,1"><title>2025-02-10: 12 contributions</title>
+<rect x="116" y="28" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M119 31h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="5,2"><title>2025-02-11: 12 contributions</title>
+<rect x="116" y="50" width="20" height="20" rx="3" fill="#116329"><animate attributeName="fill" dur="16.8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.160714;0.429762;0.69881;0.870301;1" values="#116329;#2da44e;#4ac26b;#aceebb;#116329;#116329"/></rect>
+<path d="M119 53h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="5,3"><title>2025-02-12: 12 contributions</title>
+<rect x="116" y="72" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M119 75h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+<animate attributeName="opacity" dur="16.8s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.02381;0.059524;0.870301;0.879229;1" values="1;1;0;0;1;1"/></g>
+<g data-cell="5,4"><title>2025-02-13: 12 contributions</title>
+<rect x="116" y="94" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M119 97h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+<animate attributeName="opacity" dur="16.8s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.02381;0.059524;0.870301;0.879229;1" values="1;1;0;0;1;1"/></g>
+<g data-cell="5,5"><title>2025-02-14: 12 contributions</title>
+<rect x="116" y="116" width="20" height="20" rx="3" fill="#116329"><animate attributeName="fill" dur="16.8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.160714;0.429762;0.69881;0.870301;1" values="#116329;#2da44e;#4ac26b;#aceebb;#116329;#116329"/></rect>
+<path d="M119 119h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="5,6"><title>2025-02-15: 12 contributions</title>
+<rect x="116" y="138" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M119 141h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="6,0"><title>2025-02-16: 12 contributions</title>
+<rect x="138" y="6" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M141 9h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="6,1"><title>2025-02-17: 12 contributions</title>
+<rect x="138" y="28" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M141 31h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="6,2"><title>2025-02-18: 12 contributions</title>
+<rect x="138" y="50" width="20" height="20" rx="3" fill="#116329"><animate attributeName="fill" dur="16.8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.295238;0.564286;0.875313;1" values="#116329;#2da44e;#4ac26b;#116329;#116329"/></rect>
+<path d="M141 53h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="6,3"><title>2025-02-19: 12 contributions</title>
+<rect x="138" y="72" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M141 75h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+<animate attributeName="opacity" dur="16.8s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.02381;0.059524;0.875313;0.884242;1" values="1;1;0;0;1;1"/></g>
+<g data-cell="6,4"><title>2025-02-20: 12 contributions</title>
+<rect x="138" y="94" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M141 97h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+<animate attributeName="opacity" dur="16.8s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.02381;0.059524;0.875313;0.884242;1" values="1;1;0;0;1;1"/></g>
+<g data-cell="6,5"><title>2025-02-21: 12 contributions</title>
+<rect x="138" y="116" width="20" height="20" rx="3" fill="#116329"><animate attributeName="fill" dur="16.8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.295238;0.564286;0.875313;1" values="#116329;#2da44e;#4ac26b;#116329;#116329"/></rect>
+<path d="M141 119h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="6,6"><title>2025-02-22: 12 contributions</title>
+<rect x="138" y="138" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M141 141h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="7,0"><title>2025-02-23: 12 contributions</title>
+<rect x="160" y="6" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M163 9h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="7,1"><title>2025-02-24: 12 contributions</title>
+<rect x="160" y="28" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M163 31h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="7,2"><title>2025-02-25: 12 contributions</title>
+<rect x="160" y="50" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M163 53h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="7,3"><title>2025-02-26: 12 contributions</title>
+<rect x="160" y="72" width="20" height="20" rx="3" fill="#116329"><animate attributeName="fill" dur="16.8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.160714;0.429762;0.69881;0.880326;1" values="#116329;#2da44e;#4ac26b;#aceebb;#116329;#116329"/></rect>
+<path d="M163 75h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="7,4"><title>2025-02-27: 12 contributions</title>
+<rect x="160" y="94" width="20" height="20" rx="3" fill="#116329"><animate attributeName="fill" dur="16.8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.295238;0.564286;0.880326;1" values="#116329;#2da44e;#4ac26b;#116329;#116329"/></rect>
+<path d="M163 97h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="7,5"><title>2025-02-28: 12 contributions</title>
+<rect x="160" y="116" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M163 119h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="7,6"><title>2025-03-01: 12 contributions</title>
+<rect x="160" y="138" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M163 141h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="8,0"><title>2025-03-02: 12 contributions</title>
+<rect x="182" y="6" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M185 9h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="8,1"><title>2025-03-03: 12 contributions</title>
+<rect x="182" y="28" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M185 31h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="8,2"><title>2025-03-04: 12 contributions</title>
+<rect x="182" y="50" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M185 53h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="8,3"><title>2025-03-05: 12 contributions</title>
+<rect x="182" y="72" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M185 75h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="8,4"><title>2025-03-06: 12 contributions</title>
+<rect x="182" y="94" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M185 97h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="8,5"><title>2025-03-07: 12 contributions</title>
+<rect x="182" y="116" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M185 119h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="8,6"><title>2025-03-08: 12 contributions</title>
+<rect x="182" y="138" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M185 141h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="9,0"><title>2025-03-09: 12 contributions</title>
+<rect x="204" y="6" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M207 9h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="9,1"><title>2025-03-10: 12 contributions</title>
+<rect x="204" y="28" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M207 31h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="9,2"><title>2025-03-11: 12 contributions</title>
+<rect x="204" y="50" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M207 53h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="9,3"><title>2025-03-12: 12 contributions</title>
+<rect x="204" y="72" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M207 75h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="9,4"><title>2025-03-13: 12 contributions</title>
+<rect x="204" y="94" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M207 97h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="9,5"><title>2025-03-14: 12 contributions</title>
+<rect x="204" y="116" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M207 119h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="9,6"><title>2025-03-15: 12 contributions</title>
+<rect x="204" y="138" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M207 141h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="10,0"><title>2025-03-16: 12 contributions</title>
+<rect x="226" y="6" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M229 9h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="10,1"><title>2025-03-17: 12 contributions</title>
+<rect x="226" y="28" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M229 31h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="10,2"><title>2025-03-18: 12 contributions</title>
+<rect x="226" y="50" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M229 53h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="10,3"><title>2025-03-19: 12 contributions</title>
+<rect x="226" y="72" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M229 75h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="10,4"><title>2025-03-20: 12 contributions</title>
+<rect x="226" y="94" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M229 97h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="10,5"><title>2025-03-21: 12 contributions</title>
+<rect x="226" y="116" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M229 119h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="10,6"><title>2025-03-22: 12 contributions</title>
+<rect x="226" y="138" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M229 141h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="11,0"><title>2025-03-23: 12 contributions</title>
+<rect x="248" y="6" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M251 9h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="11,1"><title>2025-03-24: 12 contributions</title>
+<rect x="248" y="28" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M251 31h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="11,2"><title>2025-03-25: 12 contributions</title>
+<rect x="248" y="50" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M251 53h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="11,3"><title>2025-03-26: 12 contributions</title>
+<rect x="248" y="72" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M251 75h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="11,4"><title>2025-03-27: 12 contributions</title>
+<rect x="248" y="94" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M251 97h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="11,5"><title>2025-03-28: 12 contributions</title>
+<rect x="248" y="116" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M251 119h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="11,6"><title>2025-03-29: 12 contributions</title>
+<rect x="248" y="138" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M251 141h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="12,0"><title>2025-03-30: 12 contributions</title>
+<rect x="270" y="6" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M273 9h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="12,1"><title>2025-03-31: 12 contributions</title>
+<rect x="270" y="28" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M273 31h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="12,2"><title>2025-04-01: 12 contributions</title>
+<rect x="270" y="50" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M273 53h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="12,3"><title>2025-04-02: 12 contributions</title>
+<rect x="270" y="72" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M273 75h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="12,4"><title>2025-04-03: 12 contributions</title>
+<rect x="270" y="94" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M273 97h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="12,5"><title>2025-04-04: 12 contributions</title>
+<rect x="270" y="116" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M273 119h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="12,6"><title>2025-04-05: 12 contributions</title>
+<rect x="270" y="138" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M273 141h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="13,0"><title>2025-04-06: 12 contributions</title>
+<rect x="292" y="6" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M295 9h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="13,1"><title>2025-04-07: 12 contributions</title>
+<rect x="292" y="28" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M295 31h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="13,2"><title>2025-04-08: 12 contributions</title>
+<rect x="292" y="50" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M295 53h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="13,3"><title>2025-04-09: 12 contributions</title>
+<rect x="292" y="72" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M295 75h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="13,4"><title>2025-04-10: 12 contributions</title>
+<rect x="292" y="94" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M295 97h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="13,5"><title>2025-04-11: 12 contributions</title>
+<rect x="292" y="116" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M295 119h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="13,6"><title>2025-04-12: 12 contributions</title>
+<rect x="292" y="138" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M295 141h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="14,0"><title>2025-04-13: 12 contributions</title>
+<rect x="314" y="6" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M317 9h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="14,1"><title>2025-04-14: 12 contributions</title>
+<rect x="314" y="28" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M317 31h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="14,2"><title>2025-04-15: 12 contributions</title>
+<rect x="314" y="50" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M317 53h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="14,3"><title>2025-04-16: 12 contributions</title>
+<rect x="314" y="72" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M317 75h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="14,4"><title>2025-04-17: 12 contributions</title>
+<rect x="314" y="94" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M317 97h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="14,5"><title>2025-04-18: 12 contributions</title>
+<rect x="314" y="116" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M317 119h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="14,6"><title>2025-04-19: 12 contributions</title>
+<rect x="314" y="138" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M317 141h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="15,0"><title>2025-04-20: 12 contributions</title>
+<rect x="336" y="6" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M339 9h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="15,1"><title>2025-04-21: 12 contributions</title>
+<rect x="336" y="28" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M339 31h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="15,2"><title>2025-04-22: 12 contributions</title>
+<rect x="336" y="50" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M339 53h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="15,3"><title>2025-04-23: 12 contributions</title>
+<rect x="336" y="72" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M339 75h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="15,4"><title>2025-04-24: 12 contributions</title>
+<rect x="336" y="94" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M339 97h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="15,5"><title>2025-04-25: 12 contributions</title>
+<rect x="336" y="116" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M339 119h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="15,6"><title>2025-04-26: 12 contributions</title>
+<rect x="336" y="138" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M339 141h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="16,0"><title>2025-04-27: 12 contributions</title>
+<rect x="358" y="6" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M361 9h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="16,1"><title>2025-04-28: 12 contributions</title>
+<rect x="358" y="28" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M361 31h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="16,2"><title>2025-04-29: 12 contributions</title>
+<rect x="358" y="50" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M361 53h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="16,3"><title>2025-04-30: 12 contributions</title>
+<rect x="358" y="72" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M361 75h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="16,4"><title>2025-05-01: 12 contributions</title>
+<rect x="358" y="94" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M361 97h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="16,5"><title>2025-05-02: 12 contributions</title>
+<rect x="358" y="116" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M361 119h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="16,6"><title>2025-05-03: 12 contributions</title>
+<rect x="358" y="138" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M361 141h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="17,0"><title>2025-05-04: 12 contributions</title>
+<rect x="380" y="6" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M383 9h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="17,1"><title>2025-05-05: 12 contributions</title>
+<rect x="380" y="28" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M383 31h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="17,2"><title>2025-05-06: 12 contributions</title>
+<rect x="380" y="50" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M383 53h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="17,3"><title>2025-05-07: 12 contributions</title>
+<rect x="380" y="72" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M383 75h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="17,4"><title>2025-05-08: 12 contributions</title>
+<rect x="380" y="94" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M383 97h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="17,5"><title>2025-05-09: 12 contributions</title>
+<rect x="380" y="116" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M383 119h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="17,6"><title>2025-05-10: 12 contributions</title>
+<rect x="380" y="138" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M383 141h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="18,0"><title>2025-05-11: 12 contributions</title>
+<rect x="402" y="6" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M405 9h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="18,1"><title>2025-05-12: 12 contributions</title>
+<rect x="402" y="28" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M405 31h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="18,2"><title>2025-05-13: 12 contributions</title>
+<rect x="402" y="50" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M405 53h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="18,3"><title>2025-05-14: 12 contributions</title>
+<rect x="402" y="72" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M405 75h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="18,4"><title>2025-05-15: 12 contributions</title>
+<rect x="402" y="94" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M405 97h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="18,5"><title>2025-05-16: 12 contributions</title>
+<rect x="402" y="116" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M405 119h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="18,6"><title>2025-05-17: 12 contributions</title>
+<rect x="402" y="138" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M405 141h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="19,0"><title>2025-05-18: 12 contributions</title>
+<rect x="424" y="6" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M427 9h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="19,1"><title>2025-05-19: 12 contributions</title>
+<rect x="424" y="28" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M427 31h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="19,2"><title>2025-05-20: 12 contributions</title>
+<rect x="424" y="50" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M427 53h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="19,3"><title>2025-05-21: 12 contributions</title>
+<rect x="424" y="72" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M427 75h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="19,4"><title>2025-05-22: 12 contributions</title>
+<rect x="424" y="94" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M427 97h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="19,5"><title>2025-05-23: 12 contributions</title>
+<rect x="424" y="116" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M427 119h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+<g data-cell="19,6"><title>2025-05-24: 12 contributions</title>
+<rect x="424" y="138" width="20" height="20" rx="3" fill="#116329"/>
+<path d="M427 141h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
+</g>
+</g>
+<g clip-path="url(#calendar-clip)">
+<g id="entry-effect" opacity="0"><animate attributeName="opacity" dur="16.8s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.02381;0.032738;0.059524;1" values="0;0;0.8;0;0"/>
+<rect x="116" y="72" width="20" height="20" rx="3" fill="none" stroke="#b65a15" stroke-width="1.5"/>
+<rect x="116" y="94" width="20" height="20" rx="3" fill="none" stroke="#b65a15" stroke-width="1.5"/>
+<rect x="138" y="72" width="20" height="20" rx="3" fill="none" stroke="#b65a15" stroke-width="1.5"/>
+<rect x="138" y="94" width="20" height="20" rx="3" fill="none" stroke="#b65a15" stroke-width="1.5"/>
+</g>
+<g data-blast="0" opacity="0"><animate attributeName="opacity" dur="16.8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.160714;0.189286;1" values="0;1;0;0"/>
+<use href="#flame" transform="translate(126 82)"/>
+<use href="#flame" transform="translate(148 82)"/>
+<use href="#flame" transform="translate(170 82)"/>
+<use href="#flame" transform="translate(104 82)"/>
+<use href="#flame" transform="translate(126 104)"/>
+<use href="#flame" transform="translate(126 126)"/>
+<use href="#flame" transform="translate(126 60)"/>
+</g>
+<g data-blast="1" opacity="0"><animate attributeName="opacity" dur="16.8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.295238;0.32381;1" values="0;1;0;0"/>
+<use href="#flame" transform="translate(148 104)"/>
+<use href="#flame" transform="translate(170 104)"/>
+<use href="#flame" transform="translate(126 104)"/>
+<use href="#flame" transform="translate(104 104)"/>
+<use href="#flame" transform="translate(148 126)"/>
+<use href="#flame" transform="translate(148 82)"/>
+<use href="#flame" transform="translate(148 60)"/>
+</g>
+<g data-blast="2" opacity="0"><animate attributeName="opacity" dur="16.8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.429762;0.458333;1" values="0;1;0;0"/>
+<use href="#flame" transform="translate(126 82)"/>
+<use href="#flame" transform="translate(148 82)"/>
+<use href="#flame" transform="translate(170 82)"/>
+<use href="#flame" transform="translate(104 82)"/>
+<use href="#flame" transform="translate(126 104)"/>
+<use href="#flame" transform="translate(126 126)"/>
+<use href="#flame" transform="translate(126 60)"/>
+</g>
+<g data-blast="3" opacity="0"><animate attributeName="opacity" dur="16.8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.564286;0.592857;1" values="0;1;0;0"/>
+<use href="#flame" transform="translate(148 104)"/>
+<use href="#flame" transform="translate(170 104)"/>
+<use href="#flame" transform="translate(126 104)"/>
+<use href="#flame" transform="translate(104 104)"/>
+<use href="#flame" transform="translate(148 126)"/>
+<use href="#flame" transform="translate(148 82)"/>
+<use href="#flame" transform="translate(148 60)"/>
+</g>
+<g data-blast="4" opacity="0"><animate attributeName="opacity" dur="16.8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.69881;0.727381;1" values="0;1;0;0"/>
+<use href="#flame" transform="translate(126 82)"/>
+<use href="#flame" transform="translate(148 82)"/>
+<use href="#flame" transform="translate(170 82)"/>
+<use href="#flame" transform="translate(104 82)"/>
+<use href="#flame" transform="translate(126 104)"/>
+<use href="#flame" transform="translate(126 126)"/>
+<use href="#flame" transform="translate(126 60)"/>
+</g>
+<g data-bomb="0" transform="translate(126 82)" opacity="0"><animate attributeName="opacity" dur="16.8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.071429;0.160714;1" values="0;1;0;0"/><circle r="7.5" fill="none" stroke="#b65a15" stroke-width="2" opacity=".5"><animate attributeName="r" dur="16.8s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.071429;0.080357;0.089286;0.098214;0.107143;0.116071;0.125;0.133929;0.142857;0.151786;0.160714;1" values="7.5;7.5;9;7.5;9;7.5;9;7.5;9;7.5;9;7.5;7.5"/></circle><use href="#bomb-shape"/></g>
+<g data-bomb="1" transform="translate(148 104)" opacity="0"><animate attributeName="opacity" dur="16.8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.205952;0.295238;1" values="0;1;0;0"/><circle r="7.5" fill="none" stroke="#b65a15" stroke-width="2" opacity=".5"><animate attributeName="r" dur="16.8s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.205952;0.214881;0.22381;0.232738;0.241667;0.250595;0.259524;0.268452;0.277381;0.28631;0.295238;1" values="7.5;7.5;9;7.5;9;7.5;9;7.5;9;7.5;9;7.5;7.5"/></circle><use href="#bomb-shape"/></g>
+<g data-bomb="2" transform="translate(126 82)" opacity="0"><animate attributeName="opacity" dur="16.8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.340476;0.429762;1" values="0;1;0;0"/><circle r="7.5" fill="none" stroke="#b65a15" stroke-width="2" opacity=".5"><animate attributeName="r" dur="16.8s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.340476;0.349405;0.358333;0.367262;0.37619;0.385119;0.394048;0.402976;0.411905;0.420833;0.429762;1" values="7.5;7.5;9;7.5;9;7.5;9;7.5;9;7.5;9;7.5;7.5"/></circle><use href="#bomb-shape"/></g>
+<g data-bomb="3" transform="translate(148 104)" opacity="0"><animate attributeName="opacity" dur="16.8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.475;0.564286;1" values="0;1;0;0"/><circle r="7.5" fill="none" stroke="#b65a15" stroke-width="2" opacity=".5"><animate attributeName="r" dur="16.8s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.475;0.483929;0.492857;0.501786;0.510714;0.519643;0.528571;0.5375;0.546429;0.555357;0.564286;1" values="7.5;7.5;9;7.5;9;7.5;9;7.5;9;7.5;9;7.5;7.5"/></circle><use href="#bomb-shape"/></g>
+<g data-bomb="4" transform="translate(126 82)" opacity="0"><animate attributeName="opacity" dur="16.8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.609524;0.69881;1" values="0;1;0;0"/><circle r="7.5" fill="none" stroke="#b65a15" stroke-width="2" opacity=".5"><animate attributeName="r" dur="16.8s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.609524;0.618452;0.627381;0.63631;0.645238;0.654167;0.663095;0.672024;0.680952;0.689881;0.69881;1" values="7.5;7.5;9;7.5;9;7.5;9;7.5;9;7.5;9;7.5;7.5"/></circle><use href="#bomb-shape"/></g>
+<rect id="rebuild-sweep" x="0" y="4" width="5" height="154" rx="2" fill="#b65a15" opacity="0">
+<animate attributeName="opacity" dur="16.8s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;0.845238;0.940476;1" values="0;1;0;0"/>
+<animate attributeName="x" dur="16.8s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.845238;0.940476;1" values="0;0;446;0"/></rect>
+</g>
+<g id="player" opacity="0" transform="translate(126 82)">
+<animateTransform attributeName="transform" type="translate" dur="16.8s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.071429;0.080357;0.089286;0.205952;0.214881;0.22381;0.340476;0.349405;0.358333;0.475;0.483929;0.492857;0.609524;0.618452;0.627381;0.845238;0.958333;1" values="126 82;126 82;148 82;148 104;148 104;148 82;126 82;126 82;148 82;148 104;148 104;148 82;126 82;126 82;148 82;148 104;148 104;126 82;126 82"/>
+<animate attributeName="opacity" dur="16.8s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.059524;0.071429;0.838095;0.845238;0.958333;0.973214;1" values="0;0;1;1;0;0;0;0"/>
+<use href="#robot"/></g>
+</svg>

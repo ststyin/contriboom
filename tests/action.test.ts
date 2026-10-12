@@ -107,6 +107,25 @@ describe('GitHub Action entry point', () => {
     expect((await readdir(output)).filter(name => name.endsWith('.svg')).sort()).toEqual(['game-static.svg', 'game.svg']);
   });
 
+  it('clears a fully active GitHub year using entry when week padding has no safe escape', async () => {
+    const context = await workspace();
+    const preload = path.join(context.directory, 'github-mock.mjs');
+    await writeFile(preload, (await readFile(preload, 'utf8'))
+      .replace('index % 14 === 0 ? 3 : 0', '12')
+      .replace("'FIRST_QUARTILE'", "'FOURTH_QUARTILE'"));
+    await context.run({ CONTRIBOOM_INPUT_MODE: 'clear' });
+    const output = path.join(context.directory, 'images with spaces/contriboom');
+    const replay = JSON.parse(await readFile(path.join(output, 'replay.json'), 'utf8'));
+    expect(replay.events[0]).toMatchObject({ type: 'entry' });
+    expect(replay.events[0].cells).toHaveLength(4);
+    expect(replay.events[0].cleared).toHaveLength(2);
+    expect(replay.stats).toMatchObject({ totalBoxes: 365, destroyed: 365, remaining: 0, contributions: 365 * 12 });
+    expect(await readFile(path.join(output, 'game.svg'), 'utf8')).toContain('id="entry-effect"');
+    const staticSvg = await readFile(path.join(output, 'game-static.svg'), 'utf8');
+    expect(staticSvg).not.toContain('<animate');
+    expect([...staticSvg.matchAll(/data-cell=/g)]).toHaveLength(365);
+  }, 30000);
+
   it('fails without output paths when required credentials or generation fail', async () => {
     const context = await workspace();
     const failures: Record<string, string>[] = [

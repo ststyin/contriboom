@@ -23,6 +23,7 @@ export interface BlockHit {
 }
 
 export type GameEvent =
+  | { type: 'entry'; time: number; duration: number; position: Position; cells: Position[]; cleared: Position[] }
   | { type: 'move'; time: number; duration: number; from: Position; to: Position }
   | { type: 'bomb'; time: number; id: number; position: Position; fuse: number }
   | { type: 'explode'; time: number; duration: number; id: number; position: Position; cells: Position[]; damaged: BlockHit[]; destroyed: Position[] }

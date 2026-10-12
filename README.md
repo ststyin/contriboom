@@ -181,6 +181,14 @@ max-bombs: '5'
 
 The full-clear demo takes about **154 seconds** to remove all 51 blocks; the preview places 5 bombs and loops after **18 seconds**. Both loop durations are calculated automatically.
 
+### Entry on full calendars
+
+If the calendar has no empty cells or no safe first bomb placement, an entry animation temporarily opens a **2 × 2** area before the character appears. Existing safe spawn positions are reused. The entry clears as few contribution blocks as possible, counts them in the clearing statistics, and restores their original levels at the end of the loop. It does not count toward `max-bombs`; ordinary bombs still follow `block-damage`. No extra configuration is needed. Single-column calendars open their entire column because a diagonal escape is unavailable.
+
+| Automatic entry on a full calendar (`mode: preview`, `max-bombs: '5'`) |
+| --- |
+| ![Automatic entry on a fully occupied calendar](assets/readme/full-calendar-entry.svg) |
+
 ### Preview bomb budget
 
 These previews compare `max-bombs` values of `0`, `1`, `5`, and `20`. A larger budget allows more bomb placements and can produce a longer loop; `0` produces a patrol without bombs.
@@ -270,7 +278,7 @@ The input calendar stays the same in this comparison. When using a built-in CLI 
 | The workflow cannot push its image commit | Workflow write permission and repository rules must allow the bot to push to the target branch. |
 | Missing token, access denied, or account not found | Check `username` and token access. GitHub fetch failures are reported; they are not replaced by simulated contributions. |
 | Rate limit or network timeout | Retry after the reported limit or connection issue is resolved. The CLI can reuse a valid local cache. |
-| Cannot safely clear the calendar | Use `mode: preview` for that calendar. Full clearing requires an empty spawn cell and a safe path away from every bomb. |
-| Empty contribution calendar | The robot patrols without inventing contributions. A fully occupied preview has no player spawn and renders as a static calendar. |
+| Cannot safely clear the calendar | Full calendars get an automatic entry area. A safe path away from every bomb is still required; use `mode: preview` if custom simulation settings prevent a complete clear. |
+| Empty contribution calendar | The robot patrols without inventing contributions. |
 | Custom character is too small | Use `player-icon-trim: auto`; use `none` only when you want to retain image padding. |
 | README still shows an older image | Check the exact file path and branch, and confirm the workflow pushed the image commit. Browser or GitHub image-proxy caches can delay updates; see [GitHub's cache troubleshooting](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/about-anonymized-urls). |

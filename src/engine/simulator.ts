@@ -24,28 +24,83 @@ export function simulate(arena: Arena, options: Partial<GameConfig> = {}): Repla
   const levels = new Map(arena.tiles.filter(tile => tile.count > 0).map(tile => [key(tile), tile.level]));
   const totalBoxes = boxes.size;
   const random = seededRandom(config.seed);
-  // Spawn in the largest connected area of empty cells, without clearing data.
+  const events: GameEvent[] = [];
+  const maxEscapeSteps = Math.max(0, Math.ceil((config.fuse - config.safetyMargin) / config.stepDuration) - 1);
+
+  function planBomb(origin: Position, randomize = true) {
+    const destinations = reachable(arena, origin, boxes);
+    let best: { position: Position; approach: Position[]; escape: Position[]; score: number; impact: ReturnType<typeof blast> } | undefined;
+    for (const position of destinations.positions) {
+      const impact = blast(arena, position, boxes, config.explosionRange);
+      if (!impact.hits.length) continue;
+      const approach = destinations.pathTo(position)!;
+      // Even a one-step escape cannot beat this upper bound. Skip costly BFS.
+      if (best && 3 * impact.hits.length - approach.length - 2 + 0.01 < best.score) continue;
+      const hazard = new Set(impact.cells.map(key));
+      const blocked = new Set([...boxes, key(position)]);
+      const escape = escapePath(arena, position, blocked, hazard, maxEscapeSteps);
+      if (!escape || escape.length * config.stepDuration + config.safetyMargin >= config.fuse) continue;
+      if (!randomize) return { position, approach, escape, score: 0, impact };
+      const score = 3 * impact.hits.length - approach.length - 2 * escape.length + random() * 0.01;
+      if (!best || score > best.score) best = { position, approach, escape, score, impact };
+    }
+    return best;
+  }
+
+  // Prefer the largest empty component that permits safe bomb placement.
   const visited = new Set<string>();
-  let largest: Position[] = [];
+  const components: Position[][] = [];
   for (const tile of arena.tiles) {
     if (boxes.has(key(tile)) || visited.has(key(tile))) continue;
     const component = reachable(arena, tile, boxes).positions;
     for (const cell of component) visited.add(key(cell));
-    if (component.length > largest.length) largest = component;
+    components.push(component);
   }
   const preferred = { x: Math.min(5, arena.width - 1), y: Math.floor(arena.height / 2) };
-  const start = largest.reduce<Position | null>((best, cell) => {
-    const distance = (p: Position): number => Math.abs(p.x - preferred.x) + Math.abs(p.y - preferred.y);
-    return !best || distance(cell) < distance(best) ? { x: cell.x, y: cell.y } : best;
-  }, null);
+  const distance = (p: Position): number => Math.abs(p.x - preferred.x) + Math.abs(p.y - preferred.y);
+  let start: Position | null = null;
+  for (const component of components.sort((a, b) => b.length - a.length)) {
+    const candidate = component.reduce((best, cell) => distance(cell) < distance(best) ? cell : best);
+    // A probe must not advance the random sequence of an existing replay.
+    if (!boxes.size || (config.mode === 'preview' && config.maxBombs === 0) || planBomb(candidate, false)) {
+      start = { x: candidate.x, y: candidate.y };
+      break;
+    }
+  }
+  if (!start && boxes.size) {
+    // A 2 x 2 entry provides a diagonal escape outside a cross-shaped blast.
+    // Single-row/column inputs have no diagonal; open their entire strip instead.
+    const entryWidth = arena.height === 1 ? arena.width : Math.min(2, arena.width);
+    const entryHeight = arena.width === 1 ? arena.height : Math.min(2, arena.height);
+    let region: { position: Position; cells: Position[]; cleared: Position[] } | undefined;
+    for (let x = 0; x <= arena.width - entryWidth; x++) {
+      for (let y = 0; y <= arena.height - entryHeight; y++) {
+        const cells = Array.from({ length: entryWidth * entryHeight }, (_, i) => ({
+          x: x + Math.floor(i / entryHeight), y: y + i % entryHeight,
+        }));
+        const cleared = cells.filter(cell => boxes.has(key(cell)));
+        const position = { x, y };
+        if (!region || cleared.length < region.cleared.length ||
+            (cleared.length === region.cleared.length && distance(position) < distance(region.position))) {
+          region = { position, cells, cleared };
+        }
+      }
+    }
+    if (region) {
+      for (const cell of region.cleared) {
+        boxes.delete(key(cell));
+        levels.set(key(cell), 0);
+      }
+      start = region.position;
+      events.push({ type: 'entry', time: 0.4, duration: 0.6, ...region });
+    }
+  }
   let player: Position | null = start;
   let time = 1.2;
   let bombCount = 0;
-  const events: GameEvent[] = [];
   // Every successful bomb reduces at least one block's remaining durability.
   const durability = config.blockDamage === 'fade' ? [...levels.values()].reduce<number>((sum, level) => sum + level, 0) : totalBoxes;
   const bombLimit = config.mode === 'clear' ? durability : config.maxBombs;
-  const maxEscapeSteps = Math.max(0, Math.ceil((config.fuse - config.safetyMargin) / config.stepDuration) - 1);
 
   function walk(path: Position[]): void {
     if (!player) throw new Error('Cannot move without an empty spawn cell.');
@@ -57,22 +112,7 @@ export function simulate(arena: Arena, options: Partial<GameConfig> = {}): Repla
   }
 
   for (let id = 0; id < bombLimit && boxes.size > 0 && player; id++) {
-    const destinations = reachable(arena, player, boxes);
-    let best: { position: Position; approach: Position[]; escape: Position[]; score: number; impact: ReturnType<typeof blast> } | undefined;
-    for (const position of destinations.positions) {
-      const impact = blast(arena, position, boxes, config.explosionRange);
-      if (!impact.hits.length) continue;
-      const approach = destinations.pathTo(position)!;
-      // Even a one-step escape cannot beat this upper bound. Skip costly BFS.
-      if (best && 3 * impact.hits.length - approach.length - 2 + 0.01 < best.score) continue;
-      const hazard = new Set(impact.cells.map(key));
-      const blocked = new Set([...boxes, key(position)]);
-      const escape = escapePath(arena, position, blocked, hazard, maxEscapeSteps);
-      if (!escape) continue;
-      if (escape.length * config.stepDuration + config.safetyMargin >= config.fuse) continue;
-      const score = 3 * impact.hits.length - approach.length - 2 * escape.length + random() * 0.01;
-      if (!best || score > best.score) best = { position, approach, escape, score, impact };
-    }
+    const best = planBomb(player);
     if (!best) break;
     walk(best.approach);
     const bombTime = time;

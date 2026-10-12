@@ -51,20 +51,20 @@ describe('pathfinding', () => {
 });
 
 /** Independently replay events against current boxes, bomb positions and active flames. */
-function verifyRound(fixture: Fixture, seed: number, options: Partial<GameConfig> = {}): Replay {
-  const data = mockContributions(seed, fixture);
+function verifyRound(fixture: Fixture, seed: number, options: Partial<GameConfig> = {}, data = mockContributions(seed, fixture)): Replay {
   const original = structuredClone(data);
-  const arena = createArena(data);
+  const arena = createArena(data, data.length / 7);
   const replay = simulate(arena, { mode: 'preview', seed, ...options });
   const boxes = initialBoxes(arena);
   const originalLevels = new Map(arena.tiles.map(tile => [key(tile), tile.level]));
   const levels = new Map(originalLevels);
   const pristine = new Set(boxes);
-  let player: Position | null = replay.start;
+  const entry = replay.events.find(event => event.type === 'entry');
+  let player: Position | null = entry ? null : replay.start;
   if (player) {
     expect(inside(arena, player)).toBe(true);
     expect(boxes.has(key(player))).toBe(false);
-  } else {
+  } else if (!entry) {
     expect(replay.events).toEqual([]);
   }
   let lastTime = 0;
@@ -77,7 +77,23 @@ function verifyRound(fixture: Fixture, seed: number, options: Partial<GameConfig
     expect(event.time + 1e-8).toBeGreaterThanOrEqual(lastTime);
     lastTime = event.time;
     expect(event.time).toBeLessThan(replay.duration);
-    if (event.type === 'move') {
+    if (event.type === 'entry') {
+      expect(event).toBe(replay.events[0]);
+      expect(player).toBeNull();
+      expect(event.position).toEqual(replay.start);
+      expect(new Set(event.cells.map(key)).size).toBe(event.cells.length);
+      expect(event.cleared).toEqual(event.cells.filter(cell => boxes.has(key(cell))));
+      for (const cell of event.cells) expect(inside(arena, cell)).toBe(true);
+      for (const cell of event.cleared) {
+        expect(boxes.delete(key(cell))).toBe(true);
+        expect(levels.get(key(cell))).toBeGreaterThan(0);
+        levels.set(key(cell), 0);
+        cleared++;
+      }
+      player = event.position;
+      expect(boxes.has(key(player))).toBe(false);
+      lastMoveEnd = event.time + event.duration;
+    } else if (event.type === 'move') {
       expect(player).not.toBeNull();
       expect(same(event.from, player!)).toBe(true);
       expect(Math.abs(event.to.x - player!.x) + Math.abs(event.to.y - player!.y)).toBe(1);
@@ -94,6 +110,7 @@ function verifyRound(fixture: Fixture, seed: number, options: Partial<GameConfig
       expect(player).not.toBeNull();
       expect(same(event.position, player!)).toBe(true);
       expect(boxes.has(key(player!))).toBe(false);
+      expect(event.time + 1e-8).toBeGreaterThanOrEqual(lastMoveEnd);
       activeBomb = event;
       placed++;
     } else if (event.type === 'explode') {
@@ -137,9 +154,9 @@ function verifyRound(fixture: Fixture, seed: number, options: Partial<GameConfig
   expect(replay.resultTime).toBeLessThan(replay.restoreTime);
   if (fixture === 'empty') expect(placed).toBe(0);
   if (fixture === 'full') {
-    expect(replay.start).toBeNull();
-    expect(placed).toBe(0);
-    expect(cleared).toBe(0);
+    expect(replay.start).not.toBeNull();
+    expect(entry?.cleared).toHaveLength(arena.width === 1 ? 7 : 4);
+    if (replay.config.maxBombs > 0 && arena.width > 1) expect(placed).toBeGreaterThan(0);
   }
   return replay;
 }
@@ -193,7 +210,7 @@ describe('simulation invariants', () => {
     expect(first).toEqual(second);
     expect(renderSvg(first)).toBe(renderSvg(second));
   });
-  for (const fixture of ['demo', 'empty', 'sparse'] as const) {
+  for (const fixture of ['demo', 'empty', 'sparse', 'full'] as const) {
     it(`clears every ${fixture} box and safely restores it across four seeds`, () => {
       for (let seed = 0; seed < 4; seed++) verifyRound(fixture, seed, { mode: 'clear' });
     }, 30000);
@@ -204,6 +221,54 @@ describe('simulation invariants', () => {
     expect(replay.stats.remaining).toBe(0);
     expect(replay.stats.bombs).toBeGreaterThan(5);
     expect(replay.duration).toBeGreaterThan(60);
+  });
+  it('creates a safe entry on full calendars across blast ranges and damage modes', () => {
+    for (const explosionRange of [1, 4, 10]) for (const blockDamage of ['fade', 'instant'] as const) {
+      verifyRound('full', 42, { mode: 'clear', explosionRange, blockDamage });
+    }
+  }, 30000);
+  it('keeps entry clearing separate from a zero or one-bomb preview budget', () => {
+    const zero = verifyRound('full', 42, { maxBombs: 0 });
+    expect(zero.stats).toMatchObject({ bombs: 0, destroyed: 4, remaining: 367 });
+    expect(zero.events.some(event => event.type === 'move')).toBe(true);
+    const one = verifyRound('full', 42, { maxBombs: 1 });
+    expect(one.stats.bombs).toBe(1);
+    expect(one.events.filter(event => event.type === 'entry')).toHaveLength(1);
+    expect(one.events.filter(event => event.type === 'explode')).toHaveLength(1);
+  });
+  it('opens the smallest required area when existing padding has no safe escape', () => {
+    const data = mockContributions(42, 'full');
+    for (const i of [0, 1, 2]) data[i] = { ...data[i]!, count: 0, level: 0 };
+    const replay = verifyRound('demo', 42, { maxBombs: 1 }, data);
+    const entry = replay.events.find(event => event.type === 'entry');
+    expect(entry?.cells).toHaveLength(4);
+    expect(entry?.cleared).toHaveLength(2);
+    expect(replay.stats.bombs).toBe(1);
+  });
+  it('reuses an existing safe spawn without introducing entry clearing', () => {
+    for (const fixture of ['empty', 'sparse', 'demo'] as const) {
+      expect(verifyRound(fixture, 42).events.some(event => event.type === 'entry')).toBe(false);
+    }
+  });
+  it('uses a smaller safe component instead of clearing blocks around a larger trapped component', () => {
+    const data = mockContributions(42, 'full');
+    const empty = [0, 1, 2, 3, 4, 10 * 7 + 2, 10 * 7 + 3, 11 * 7 + 2, 11 * 7 + 3];
+    for (const i of empty) data[i] = { ...data[i]!, count: 0, level: 0 };
+    const replay = verifyRound('demo', 42, { explosionRange: 10, maxBombs: 1 }, data);
+    expect(replay.events.some(event => event.type === 'entry')).toBe(false);
+    expect(replay.start?.x).toBeGreaterThanOrEqual(10);
+    expect(replay.start?.x).toBeLessThanOrEqual(11);
+    expect(replay.stats.bombs).toBe(1);
+  });
+  it('clears a full two-column calendar with a capped two-by-two entry', () => {
+    const data = mockContributions(42, 'full').slice(0, 14);
+    const replay = verifyRound('full', 42, { mode: 'clear', explosionRange: 10 }, data);
+    expect(replay.stats).toMatchObject({ totalBoxes: 14, destroyed: 14, remaining: 0 });
+  });
+  it('safely handles a full single-column calendar without a diagonal escape', () => {
+    const data = mockContributions(42, 'full').slice(0, 7);
+    const replay = verifyRound('full', 42, { mode: 'clear' }, data);
+    expect(replay.stats).toMatchObject({ bombs: 0, destroyed: 7, remaining: 0 });
   });
   it('safely clears and restores durable blocks, including repeated hits and changed routes', () => {
     for (const seed of [3, 42, 71]) {
@@ -235,7 +300,7 @@ describe('simulation invariants', () => {
   });
   it('never presents an unsafe or incomplete run as a full clear', () => {
     expect(() => simulate(createArena(mockContributions(42, 'demo')), { mode: 'clear', fuse: 0.1 })).toThrow(/Cannot safely clear/);
-    expect(() => simulate(createArena(mockContributions(42, 'full')), { mode: 'clear' })).toThrow(/Cannot safely clear/);
+    expect(() => simulate(createArena(mockContributions(42, 'full')), { mode: 'clear', fuse: 0.1 })).toThrow(/Cannot safely clear/);
   });
 });
 
@@ -292,12 +357,29 @@ describe('SVG output', () => {
       expect(() => renderSvg(replay, { playerIcon })).toThrow('embedded image data URI');
     }
   });
-  it('renders the original calendar when no empty spawn exists', () => {
+  it('animates entry on a full calendar and keeps the original static image', () => {
     const full = simulate(createArena(mockContributions(42, 'full')), { mode: 'preview' });
     const svg = renderSvg(full);
-    expect(svg.includes('id="player"')).toBe(false);
-    expect(svg.includes('<animate')).toBe(false);
+    expect(svg).toContain('id="entry-effect"');
+    expect(svg).toContain('id="player" opacity="0"');
+    const entry = full.events.find(event => event.type === 'entry')!;
+    for (const cell of entry.cleared) {
+      const block = svg.match(new RegExp(`<g data-cell="${key(cell)}">[\\s\\S]*?<\\/g>`))![0];
+      expect(block).toContain('attributeName="opacity"');
+      expect(block).toContain('calcMode="linear"');
+      expect(block).toContain('values="1;1;0;0;1;1"');
+    }
+    const player = svg.slice(svg.indexOf('<g id="player"'));
+    expect(player).toContain('values="0;0;1;1;0;0;0;0"');
     expect([...svg.matchAll(/data-cell=/g)]).toHaveLength(371);
+    const staticSvg = renderSvg(full, { animated: false });
+    expect(staticSvg).not.toMatch(/<animate|id="player"|id="entry-effect"/);
+    expect([...staticSvg.matchAll(/data-cell=/g)]).toHaveLength(371);
+    for (const cell of entry.cleared) {
+      const tile = full.arena.tiles.find(tile => same(tile, cell))!;
+      const block = staticSvg.match(new RegExp(`<g data-cell="${key(cell)}">[\\s\\S]*?<\\/g>`))![0];
+      expect(block).toContain(`fill="${THEMES.github.colors[tile.level]}"`);
+    }
   });
   it('contains only self-contained artwork and escapes input labels', () => {
     const svg = renderSvg(replay, { label: '<script>"&\'' });
@@ -307,17 +389,19 @@ describe('SVG output', () => {
     for (const reference of svg.matchAll(/href="([^"]+)"/g)) expect(reference[1]).toMatch(/^#/);
   });
   it('synchronizes every animation and has well-formed keyframe arrays', () => {
-    const svg = renderSvg(replay);
-    const animations = [...svg.matchAll(/<(?:animate|animateTransform)\s[^>]+\/>/g)];
-    expect(animations.length).toBeGreaterThan(10);
-    for (const [tag] of animations) {
-      expect(Number(tag.match(/dur="([\d.]+)s"/)![1])).toBeCloseTo(replay.duration, 5);
-      const times = tag.match(/keyTimes="([^"]+)"/)![1]!.split(';').map(Number);
-      const values = tag.match(/values="([^"]+)"/)![1]!.split(';');
-      expect(times).toHaveLength(values.length);
-      expect(times[0]).toBe(0);
-      expect(times.at(-1)).toBe(1);
-      for (let index = 1; index < times.length; index++) expect(times[index]!).toBeGreaterThan(times[index - 1]!);
+    for (const round of [replay, simulate(createArena(mockContributions(42, 'full')), { mode: 'preview' })]) {
+      const svg = renderSvg(round);
+      const animations = [...svg.matchAll(/<(?:animate|animateTransform)\s[^>]+\/>/g)];
+      expect(animations.length).toBeGreaterThan(10);
+      for (const [tag] of animations) {
+        expect(Number(tag.match(/dur="([\d.]+)s"/)![1])).toBeCloseTo(round.duration, 5);
+        const times = tag.match(/keyTimes="([^"]+)"/)![1]!.split(';').map(Number);
+        const values = tag.match(/values="([^"]+)"/)![1]!.split(';');
+        expect(times).toHaveLength(values.length);
+        expect(times[0]).toBe(0);
+        expect(times.at(-1)).toBe(1);
+        for (let index = 1; index < times.length; index++) expect(times[index]!).toBeGreaterThan(times[index - 1]!);
+      }
     }
   });
   it('renders a static alternative and distinct themes from the same replay', () => {

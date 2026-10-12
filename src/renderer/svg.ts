@@ -78,6 +78,7 @@ export function renderSvg(replay: Replay, options: RenderOptions = {}): string {
 </defs>`);
   const bombs = replay.events.filter(event => event.type === 'bomb');
   const explosions = replay.events.filter(event => event.type === 'explode');
+  const entry = replay.events.find(event => event.type === 'entry');
 
   emit('<g id="floor">');
   for (let x = 0; x < arena.width; x++) {
@@ -89,6 +90,7 @@ export function renderSvg(replay: Replay, options: RenderOptions = {}): string {
   const destroyedAt = new Map<string, number>();
   const restoredAt = new Map<string, number>();
   const damageFrames = new Map<string, Frame[]>();
+  const entryCells = new Set(entry?.cleared.map(key));
   for (const event of replay.events) {
     if (event.type === 'explode') {
       for (const cell of event.destroyed) destroyedAt.set(key(cell), event.time);
@@ -109,12 +111,19 @@ export function renderSvg(replay: Replay, options: RenderOptions = {}): string {
     emit(`<g data-cell="${id}"><title>${escapeXml(tile.date)}: ${tile.count} contributions</title>
 <rect x="${calendarX + tile.x * stride}" y="${calendarY + tile.y * stride}" width="20" height="20" rx="3" fill="${theme.colors[tile.level]}"${damage ? `>${animation('fill', [[0, theme.colors[tile.level]], ...damage, [restoredAt.get(id)!, theme.colors[tile.level]], [duration, theme.colors[tile.level]]], duration)}</rect>` : '/>'}
 <path d="M${calendarX + tile.x * stride + 3} ${calendarY + tile.y * stride + 3}h14" stroke="#fff" stroke-opacity=".16" stroke-linecap="round"/>
-${animated && hit !== undefined ? animation('opacity', [[0, 1], [hit, 0], [restoredAt.get(id)!, 1], [duration, 1]], duration) : ''}</g>`);
+${animated && entry && entryCells.has(id)
+  ? animation('opacity', [[0, 1], [entry.time, 1], [entry.time + entry.duration, 0], [restoredAt.get(id)!, 0], [restoredAt.get(id)! + 0.15, 1], [duration, 1]], duration, 'linear')
+  : animated && hit !== undefined ? animation('opacity', [[0, 1], [hit, 0], [restoredAt.get(id)!, 1], [duration, 1]], duration) : ''}</g>`);
   }
   emit('</g>');
 
   if (animated) {
     emit('<g clip-path="url(#calendar-clip)">');
+    if (entry) {
+      emit(`<g id="entry-effect" opacity="0">${animation('opacity', [[0, 0], [entry.time, 0], [entry.time + 0.15, 0.8], [entry.time + entry.duration, 0], [duration, 0]], duration, 'linear')}`);
+      for (const cell of entry.cells) emit(`<rect x="${calendarX + cell.x * stride}" y="${calendarY + cell.y * stride}" width="20" height="20" rx="3" fill="none" stroke="${effectAccent}" stroke-width="1.5"/>`);
+      emit('</g>');
+    }
     for (const event of explosions) {
       emit(`<g data-blast="${event.id}" opacity="0">${visibleBetween(event.time, event.time + event.duration, duration)}`);
       for (const cell of event.cells) emit(`<use href="#flame" transform="translate(${xy(cell)})"/>`);
@@ -146,9 +155,11 @@ ${animation('x', [[0, calendarX - 6], [replay.restoreTime, calendarX - 6], [dura
     }
     const finalPosition = positionFrames.at(-1)![1];
     positionFrames.push([replay.restoreTime, finalPosition], [duration - 0.7, xy(replay.start)], [duration, xy(replay.start)]);
-    emit(`<g id="player" transform="translate(${xy(replay.start)})">
+    const opacityFrames: Frame[] = entry ? [[0, 0], [entry.time + entry.duration, 0], [1.2, 1]] : [[0, 1]];
+    opacityFrames.push([replay.restoreTime - 0.12, 1], [replay.restoreTime, 0], [duration - 0.7, 0], [duration - 0.45, entry ? 0 : 1], [duration, entry ? 0 : 1]);
+    emit(`<g id="player"${entry ? ' opacity="0"' : ''} transform="translate(${xy(replay.start)})">
 ${animation('transform', positionFrames, duration, 'linear', true)}
-${animation('opacity', [[0, 1], [replay.restoreTime - 0.12, 1], [replay.restoreTime, 0], [duration - 0.7, 0], [duration - 0.45, 1], [duration, 1]], duration, 'linear')}
+${animation('opacity', opacityFrames, duration, 'linear')}
 <use href="#robot"/></g>`);
   }
   emit('</svg>');

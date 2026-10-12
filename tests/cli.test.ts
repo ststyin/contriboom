@@ -23,6 +23,23 @@ afterEach(async () => {
 });
 
 describe('generation CLI', () => {
+  it('generates a full calendar with automatic entry in clear and zero-bomb preview modes', async () => {
+    const output = await directory();
+    for (const mode of ['clear', 'preview']) {
+      await run(['--fixture', 'full', '--mode', mode, '--max-bombs', '0', '--output', output]);
+      const replay = JSON.parse(await readFile(path.join(output, 'replay.json'), 'utf8'));
+      expect(replay.events[0]).toMatchObject({ type: 'entry' });
+      expect(replay.events[0].cleared).toHaveLength(4);
+      expect(replay.stats.totalBoxes).toBe(371);
+      expect(replay.stats.contributions).toBe(replay.arena.tiles.reduce((sum: number, tile: { count: number }) => sum + tile.count, 0));
+      expect(replay.stats.remaining).toBe(mode === 'clear' ? 0 : 367);
+      if (mode === 'preview') expect(replay.stats.bombs).toBe(0);
+      expect(await readFile(path.join(output, 'game.svg'), 'utf8')).toContain('id="entry-effect"');
+      const staticSvg = await readFile(path.join(output, 'game-static.svg'), 'utf8');
+      expect(staticSvg).not.toContain('<animate');
+      expect([...staticSvg.matchAll(/data-cell=/g)]).toHaveLength(371);
+    }
+  });
   it('uses only a bomb budget for previews and rejects the removed duration option', async () => {
     const output = await directory();
     await run(['--fixture', 'demo', '--mode', 'preview', '--max-bombs', '20', '--output', output]);
