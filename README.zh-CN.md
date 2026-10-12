@@ -53,7 +53,7 @@ jobs:
 
       - name: Generate contribution arena
         id: contriboom
-        uses: ststyin/contriboom@main
+        uses: ststyin/contriboom@v1.0.0
         with:
           username: ${{ github.repository_owner }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -76,7 +76,7 @@ jobs:
           git push
 ```
 
-[带完整注释的 workflow 示例](examples/profile.yml) 列出了所有参数。如果需要固定版本，可以将 `@main` 替换为你选定的 tag 或提交 SHA。
+[带完整注释的 workflow 示例](examples/profile.yml) 列出了所有参数。示例使用 `v1.0.0` 发布标签，使用 `@main` 会跟随最新开发代码。
 
 ### 2. 运行一次并引用图片
 

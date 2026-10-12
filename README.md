@@ -53,7 +53,7 @@ jobs:
 
       - name: Generate contribution arena
         id: contriboom
-        uses: ststyin/contriboom@main
+        uses: ststyin/contriboom@v1.0.0
         with:
           username: ${{ github.repository_owner }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -76,7 +76,7 @@ jobs:
           git push
 ```
 
-The [annotated workflow example](examples/profile.yml) includes every input. For a specific release or revision, replace `@main` with your chosen tag or commit SHA.
+The [annotated workflow example](examples/profile.yml) includes every input. Examples use the `v1.0.0` release tag, use `@main` to follow the latest development changes.
 
 ### 2. Generate once and embed the image
 

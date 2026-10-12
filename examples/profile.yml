@@ -1,5 +1,6 @@
 # Copy this file to .github/workflows/contriboom.yml in your profile repository.
-# ststyin/contriboom@main becomes available after the Action is pushed to main.
+# Examples use the `v1.0.0` release tag.
+# Use @main to follow the latest development changes.
 name: Update contribution animation
 
 on:
@@ -27,7 +28,7 @@ jobs:
 
       - name: Generate contribution arena
         id: contriboom
-        uses: ststyin/contriboom@main
+        uses: ststyin/contriboom@v1.0.0
         with:
           # Omitted inputs use their defaults. Uncomment a setting and edit its value to enable it.
 
