@@ -354,3 +354,7 @@ The input calendar stays the same in this comparison. When using a built-in CLI 
 | Empty contribution calendar | The robot patrols without inventing contributions. |
 | Custom character is too small | Use `player-icon-trim: auto`; use `none` only when you want to retain image padding. |
 | README still shows an older image | Check the exact file path and branch, and confirm the workflow pushed the image commit. Browser or GitHub image-proxy caches can delay updates; see [GitHub's cache troubleshooting](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/about-anonymized-urls). |
+
+## Links
+
+🌐 [Linux Do](https://linux.do)

@@ -354,3 +354,7 @@ seed: '66' # Default: 42.
 | 日历没有贡献 | 机器人会巡逻，不会虚构贡献。 |
 | 自定义角色过小 | 使用 `player-icon-trim: auto`；只有想保留图片留白时才使用 `none`。 |
 | README 仍显示旧图片 | 核对文件路径和分支，确认 workflow 已推送图片提交。浏览器或 GitHub 图片代理缓存可能导致延迟，参见 [GitHub 缓存排查文档](https://docs.github.com/zh/authentication/keeping-your-account-and-data-secure/about-anonymized-urls)。 |
+
+## 友情链接
+
+🌐 [Linux Do](https://linux.do)
