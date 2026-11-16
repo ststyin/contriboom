@@ -57,6 +57,20 @@ jobs:
           # max-bombs: Integer from 0 to 20. Default: 5 bombs.
           # max-bombs: '5'
 
+          # ===== Bomb planning =====
+          # planner: balanced | fewer-bombs | fast-clear | min-bombs. Default: balanced.
+          # balanced: Balances hits and walking distance.
+          # fewer-bombs: Uses more computation to reduce bombs; no global minimum guarantee.
+          # fast-clear: Reduces simulated clearing time; no global shortest-time guarantee.
+          # min-bombs: Exact minimum bomb count for the fixed spawn/entry. Requires mode: clear.
+          # Exact search is intended for small inputs; even sparse calendars can exceed its budget.
+          # fewer-bombs and fast-clear previews prioritize hits within the bomb budget, then blocks cleared.
+          # The revision in uses: must include these planner inputs; for a PR, use its branch or commit.
+          # planner: fewer-bombs
+          # planner-search-limit: Positive safe integer, only used by min-bombs. Default: 10000 search nodes.
+          # Includes the initial node; limits search, not bomb count or seconds. Fails without an optimality proof.
+          # planner-search-limit: '10000'
+
           # ===== Explosion rules =====
           # block-damage: fade | instant. Default: fade.
           # fade: Lowers a block's level on each hit until it disappears; instant: Destroys it in one hit.

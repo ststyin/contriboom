@@ -1,17 +1,21 @@
 import { initialBoxes, key, seededRandom } from './map.ts';
-import { escapePath, reachable } from './pathfinding.ts';
-import { blast } from './bomb.ts';
+import { reachable } from './pathfinding.ts';
+import { balancedBomb, heuristicPlans, POST_BLAST_DELAY, validatePlannerOptions } from './planner.ts';
+import { minimumBombs } from './min-bombs.ts';
 import { DEFAULT_RANGE, RANGE_LIMIT } from './range.ts';
 import type { Arena, GameConfig, GameEvent, Level, Position, Replay } from './types.ts';
 
 export const DEFAULT_CONFIG: GameConfig = {
   mode: 'clear',
+  planner: 'balanced',
+  plannerSearchLimit: 10000,
   seed: 42, maxBombs: 5, explosionRange: DEFAULT_RANGE, blockDamage: 'fade', stepDuration: 0.15,
   fuse: 1.5, safetyMargin: 0.3, blastDuration: 0.48,
 };
 
 export function simulate(arena: Arena, options: Partial<GameConfig> = {}): Replay {
   const config = { ...DEFAULT_CONFIG, ...options };
+  validatePlannerOptions(config.planner, config.mode, config.plannerSearchLimit);
   if (!['clear', 'preview'].includes(config.mode) || !Number.isSafeInteger(config.seed) || !Number.isInteger(config.maxBombs) ||
       !['instant', 'fade'].includes(config.blockDamage) ||
       config.maxBombs < 0 || config.maxBombs > 20 ||
@@ -25,26 +29,8 @@ export function simulate(arena: Arena, options: Partial<GameConfig> = {}): Repla
   const totalBoxes = boxes.size;
   const random = seededRandom(config.seed);
   const events: GameEvent[] = [];
-  const maxEscapeSteps = Math.max(0, Math.ceil((config.fuse - config.safetyMargin) / config.stepDuration) - 1);
-
   function planBomb(origin: Position, randomize = true) {
-    const destinations = reachable(arena, origin, boxes);
-    let best: { position: Position; approach: Position[]; escape: Position[]; score: number; impact: ReturnType<typeof blast> } | undefined;
-    for (const position of destinations.positions) {
-      const impact = blast(arena, position, boxes, config.explosionRange);
-      if (!impact.hits.length) continue;
-      const approach = destinations.pathTo(position)!;
-      // Even a one-step escape cannot beat this upper bound. Skip costly BFS.
-      if (best && 3 * impact.hits.length - approach.length - 2 + 0.01 < best.score) continue;
-      const hazard = new Set(impact.cells.map(key));
-      const blocked = new Set([...boxes, key(position)]);
-      const escape = escapePath(arena, position, blocked, hazard, maxEscapeSteps);
-      if (!escape || escape.length * config.stepDuration + config.safetyMargin >= config.fuse) continue;
-      if (!randomize) return { position, approach, escape, score: 0, impact };
-      const score = 3 * impact.hits.length - approach.length - 2 * escape.length + random() * 0.01;
-      if (!best || score > best.score) best = { position, approach, escape, score, impact };
-    }
-    return best;
+    return balancedBomb(arena, origin, boxes, config, random, !randomize);
   }
 
   // Prefer the largest empty component that permits safe bomb placement.
@@ -101,6 +87,9 @@ export function simulate(arena: Arena, options: Partial<GameConfig> = {}): Repla
   // Every successful bomb reduces at least one block's remaining durability.
   const durability = config.blockDamage === 'fade' ? [...levels.values()].reduce<number>((sum, level) => sum + level, 0) : totalBoxes;
   const bombLimit = config.mode === 'clear' ? durability : config.maxBombs;
+  const plans = !player || config.planner === 'balanced' ? undefined : config.planner === 'min-bombs'
+    ? minimumBombs(arena, player, boxes, levels, config)
+    : heuristicPlans(arena, player, boxes, levels, config, bombLimit);
 
   function walk(path: Position[]): void {
     if (!player) throw new Error('Cannot move without an empty spawn cell.');
@@ -112,7 +101,7 @@ export function simulate(arena: Arena, options: Partial<GameConfig> = {}): Repla
   }
 
   for (let id = 0; id < bombLimit && boxes.size > 0 && player; id++) {
-    const best = planBomb(player);
+    const best = plans ? plans[id] : planBomb(player);
     if (!best) break;
     walk(best.approach);
     const bombTime = time;
@@ -128,7 +117,7 @@ export function simulate(arena: Arena, options: Partial<GameConfig> = {}): Repla
     });
     const destroyed = damaged.filter(hit => hit.toLevel === 0).map(hit => hit.position);
     events.push({ type: 'explode', id, time, position: best.position, duration: config.blastDuration, cells: best.impact.cells, damaged, destroyed });
-    time += config.blastDuration + 0.28;
+    time += config.blastDuration + POST_BLAST_DELAY;
     bombCount++;
   }
 

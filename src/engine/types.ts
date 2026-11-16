@@ -16,6 +16,7 @@ export interface Arena {
 }
 
 export type BlockDamage = 'instant' | 'fade';
+export type Planner = 'balanced' | 'fewer-bombs' | 'fast-clear' | 'min-bombs';
 export interface BlockHit {
   position: Position;
   fromLevel: Level;
@@ -31,6 +32,8 @@ export type GameEvent =
 
 export interface GameConfig {
   mode: 'clear' | 'preview';
+  planner: Planner;
+  plannerSearchLimit: number;
   seed: number;
   maxBombs: number;
   explosionRange: number;

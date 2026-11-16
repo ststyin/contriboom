@@ -65,7 +65,8 @@ describe('GitHub Action entry point', () => {
     await mkdir(path.join(context.directory, 'my assets'));
     const iconPath = "my assets/player 'icon'.png";
     await writeFile(path.join(context.directory, iconPath), icon);
-    const { stdout } = await context.run({ CONTRIBOOM_INPUT_THEME: 'lavender', CONTRIBOOM_INPUT_PLAYER_ICON: iconPath, CONTRIBOOM_INPUT_BLOCK_DAMAGE: 'instant' });
+    const { stdout } = await context.run({ CONTRIBOOM_INPUT_THEME: 'lavender', CONTRIBOOM_INPUT_PLAYER_ICON: iconPath,
+      CONTRIBOOM_INPUT_BLOCK_DAMAGE: 'instant', CONTRIBOOM_INPUT_PLANNER: 'fewer-bombs' });
     const outputs = Object.fromEntries((await readFile(context.outputFile, 'utf8')).trim().split('\n').map(line => {
       const separator = line.indexOf('=');
       return [line.slice(0, separator), line.slice(separator + 1)];
@@ -83,20 +84,20 @@ describe('GitHub Action entry point', () => {
     expect(await readFile(outputs['svg-static']!, 'utf8')).toContain('#F2EFF5');
     expect((await readdir(outputs['output-dir']!)).filter(name => name.endsWith('.svg')).sort()).toEqual(['game-static.svg', 'game.svg']);
     const replay = JSON.parse(await readFile(path.join(outputs['output-dir']!, 'replay.json'), 'utf8'));
-    expect(replay.config).toMatchObject({ mode: 'preview', seed: 71, explosionRange: 2, blockDamage: 'instant', maxBombs: 2 });
+    expect(replay.config).toMatchObject({ mode: 'preview', planner: 'fewer-bombs', seed: 71, explosionRange: 2, blockDamage: 'instant', maxBombs: 2 });
     expect(replay.config).not.toHaveProperty('maxDuration');
     expect(replay.stats.bombs).toBe(2);
     expect(stdout).not.toContain(context.env.CONTRIBOOM_INPUT_TOKEN);
     expect(await readdir(context.directory)).not.toContain('.cache');
   });
 
-  it('defaults to a complete clear, the GitHub palette and the artifacts directory', async () => {
+  it('runs legacy Action inputs without planner settings using balanced and the existing defaults', async () => {
     const context = await workspace();
     await context.run({ CONTRIBOOM_INPUT_OUTPUT: '', CONTRIBOOM_INPUT_MODE: '', CONTRIBOOM_INPUT_SEED: '', CONTRIBOOM_INPUT_RANGE: '', CONTRIBOOM_INPUT_BLOCK_DAMAGE: '' });
     const replay = JSON.parse(await readFile(path.join(context.directory, 'artifacts/replay.json'), 'utf8'));
     expect(replay.stats.remaining).toBe(0);
     expect(replay.stats.destroyed).toBe(replay.stats.totalBoxes);
-    expect(replay.config).toMatchObject({ mode: 'clear', seed: 42, explosionRange: 4, blockDamage: 'fade' });
+    expect(replay.config).toMatchObject({ mode: 'clear', planner: 'balanced', plannerSearchLimit: 10000, seed: 42, explosionRange: 4, blockDamage: 'fade' });
     expect(replay.config).not.toHaveProperty('explosionRangeMax');
     const output = path.join(context.directory, 'artifacts');
     for (const name of ['game.svg', 'game-static.svg']) {
@@ -105,6 +106,26 @@ describe('GitHub Action entry point', () => {
       expect(svg).toContain('#aceebb');
     }
     expect((await readdir(output)).filter(name => name.endsWith('.svg')).sort()).toEqual(['game-static.svg', 'game.svg']);
+  });
+
+  it.each(['fast-clear', 'min-bombs'])('forwards %s and its search budget through the real CLI', async planner => {
+    const context = await workspace();
+    const preload = path.join(context.directory, 'github-mock.mjs');
+    await writeFile(preload, (await readFile(preload, 'utf8')).replace('index % 14 === 0 ? 3 : 0', 'index === 100 ? 3 : 0'));
+    await context.run({ CONTRIBOOM_INPUT_MODE: 'clear', CONTRIBOOM_INPUT_PLANNER: planner, CONTRIBOOM_INPUT_PLANNER_SEARCH_LIMIT: '1' });
+    const output = path.join(context.directory, 'images with spaces/contriboom');
+    const replay = JSON.parse(await readFile(path.join(output, 'replay.json'), 'utf8'));
+    expect(replay.config).toMatchObject({ planner, plannerSearchLimit: 1 });
+    expect(replay.stats).toMatchObject({ bombs: 1, remaining: 0 });
+    expect((await readFile(context.outputFile, 'utf8')).trim()).not.toBe('');
+  });
+
+  it('emits no output paths or artifacts when exact search exhausts its budget', async () => {
+    const context = await workspace();
+    await expect(context.run({ CONTRIBOOM_INPUT_MODE: 'clear', CONTRIBOOM_INPUT_PLANNER: 'min-bombs', CONTRIBOOM_INPUT_PLANNER_SEARCH_LIMIT: '1' }))
+      .rejects.toMatchObject({ stderr: expect.stringContaining('before proving the minimum bomb count') });
+    expect(await readFile(context.outputFile, 'utf8')).toBe('');
+    await expect(readdir(path.join(context.directory, 'images with spaces/contriboom'))).rejects.toMatchObject({ code: 'ENOENT' });
   });
 
   it('clears a fully active GitHub year using entry when week padding has no safe escape', async () => {
@@ -130,6 +151,7 @@ describe('GitHub Action entry point', () => {
     const context = await workspace();
     const failures: Record<string, string>[] = [
       { CONTRIBOOM_INPUT_USERNAME: '' }, { CONTRIBOOM_INPUT_TOKEN: '' }, { CONTRIBOOM_TEST_FAIL: '1' },
+      { CONTRIBOOM_INPUT_PLANNER: 'min-bombs' },
     ];
     for (const overrides of failures) {
       await expect(context.run(overrides)).rejects.toMatchObject({ code: 1 });
@@ -152,8 +174,9 @@ describe('GitHub Action entry point', () => {
     const context = await workspace();
     const other = await workspace();
     const external = path.join(other.directory, 'github-mock.mjs');
-    await symlink(external, path.join(context.directory, 'outside.png'));
-    for (const icon of [external, path.relative(context.directory, external), 'outside.png']) {
+    // A directory junction exercises realpath escapes on Windows without requiring file-symlink privileges.
+    await symlink(other.directory, path.join(context.directory, 'outside'), process.platform === 'win32' ? 'junction' : 'dir');
+    for (const icon of [external, path.relative(context.directory, external), path.join('outside', 'github-mock.mjs')]) {
       await expect(context.run({ CONTRIBOOM_INPUT_PLAYER_ICON: icon })).rejects.toMatchObject({
         stderr: expect.stringContaining('player-icon must be a file inside the caller workspace'),
       });
@@ -222,10 +245,13 @@ describe('profile publication example', () => {
     for (const file of await readdir(path.join(context.directory, 'images with spaces/contriboom'))) {
       await writeFile(path.join(directory, file), await readFile(path.join(context.directory, 'images with spaces/contriboom', file)));
     }
-    const template = await readFile(new URL('../examples/profile.yml', import.meta.url), 'utf8');
+    const template = (await readFile(new URL('../examples/profile.yml', import.meta.url), 'utf8')).replace(/\r\n/g, '\n');
     const script = template.slice(template.indexOf('        run: |\n') + '        run: |\n'.length)
       .split('\n').map(line => line.slice(10)).join('\n');
-    const publish = () => execute('bash', ['-e', '-o', 'pipefail', '-c', script], {
+    // Use Git Bash on Windows; the system bash.exe can be an unconfigured WSL launcher.
+    const bash = process.platform === 'win32'
+      ? path.resolve((await execute('git', ['--exec-path'])).stdout.trim(), '../../../bin/bash.exe') : 'bash';
+    const publish = () => execute(bash, ['-e', '-o', 'pipefail', '-c', script], {
       cwd: repository, env: { ...process.env,
         SVG: path.join(directory, 'game.svg'), SVG_STATIC: path.join(directory, 'game-static.svg'),
       },

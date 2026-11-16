@@ -116,6 +116,37 @@ jobs:
 
 `preview` 模式可以省略 `max-bombs`，默认值为 5。它是炸弹数量上限，如果已清场或没有安全放置位置，实际数量可能更少；它不限制 `clear` 模式的一轮清场。循环时长根据移动、炸弹和恢复日历的动画自动计算，不设时间上限。贡献密集时，完整清场可能需要数分钟。
 
+### 炸弹规划
+
+| 参数 | 默认值 | 可选值或行为 |
+| --- | --- | --- |
+| `planner` | `balanced` | `balanced`、`fewer-bombs`、`fast-clear` 或 `min-bombs`，目标与保证见下表。 |
+| `planner-search-limit` | `'10000'` | 正的 JavaScript 安全整数。`min-bombs` 的搜索状态预算，包含初始状态；其他策略不使用此预算。 |
+
+| 策略 | 目标与保证 |
+| --- | --- |
+| `balanced` | 原有贪心评分，兼顾命中数量、接近距离和撤离距离。 |
+| `fewer-bombs` | 通过有限前瞻减少用弹。与 `balanced` 的完整方案比较，先选择炸弹更少的方案，数量相同再选择行走步数更少的方案；不保证全局最少。 |
+| `fast-clear` | 通过有限前瞻缩短模拟清场时间。与 `balanced` 的完整方案比较并保留更快的方案，可能比 `fewer-bombs` 使用更多炸弹；不保证全局最短时间。 |
+| `min-bombs` | 在固定出生与入场结果后，按现有移动、爆炸、伤害和逐颗放弹规则，精确求解最少炸弹数。仅支持 `mode: clear`；预算不足以证明最优时会报错。 |
+
+所有策略沿用相同的移动、爆炸、安全撤离、出生和自动入场规则。最少炸弹搜索在出生与入场结果固定后开始，入场移除方块不消耗炸弹。搜索不优化其他出生位置或入场清除区域，也不保证在同样少的炸弹数下行走距离最短。
+
+`min-bombs` 适合小规模输入。即使方块稀疏，也可能超出搜索预算；普通全年日历建议使用 `fewer-bombs`，需要证明最优时再选精确搜索。不会将未证明最优的方案静默作为 `min-bombs` 返回。
+
+`planner-search-limit` 统计剪枝后纳入搜索的节点数，包含初始局面；同一剩余耐久局面若以更少炸弹重新进入搜索，也会再次计数。它不限制炸弹数量、计算秒数或动画时长。增大数值允许更多搜索，也可能增加时间和内存消耗，但不能确保一定能证明最优。
+
+在 `preview` 模式下，`fewer-bombs` 和 `fast-clear` 优先增加炸弹预算内的命中次数，再比较实际清除数量；`fade` 模式每次命中降低一级耐久。效果相同时，`fast-clear` 优先选择模拟耗时更短的方案。耗时包含接近炸弹位置的移动、引信和火焰等待，撤离发生在引信倒计时内。策略计算时间与动画时长分开。
+
+```yaml
+mode: clear
+planner: fewer-bombs
+```
+
+本地生成可使用 `npm run generate -- --fixture demo --planner fast-clear`。小日历的精确搜索可使用 `npm run generate -- --input small-calendar.json --planner min-bombs --planner-search-limit 20000`。所选策略和预算会记录到 `replay.json`。省略 `planner` 时沿用原来的 `balanced` 行为。
+
+GitHub Actions 需要引用 `action.yml` 已包含这些参数的分支、提交或发布版本。仅在 `with:` 中增加参数不会升级 `uses:` 固定的版本；测试 PR 时，应将 `uses:` 指向该 PR 的分支或提交。
+
 ### 爆炸规则
 
 | 参数 | 默认值 | 可选值或行为 |
@@ -351,6 +382,8 @@ seed: '66' # Default: 42.
 | 缺少令牌、访问被拒绝或账号不存在 | 检查 `username` 和令牌权限。GitHub 获取失败会直接报错，不会用模拟数据替代。 |
 | API 限流或网络超时 | 等待限流或连接问题解决后重试。CLI 可以复用有效的本地缓存。 |
 | 提示无法安全完整清场 | 全满日历会自动创建入场区域，但每次放置炸弹后仍需有安全撤离路径。若自定义模拟配置阻碍完整清场，可使用 `mode: preview`。 |
+| `min-bombs search limit ... reached before proving` | 增大 `planner-search-limit`，或改用 `fewer-bombs`。该限制统计纳入搜索的节点数，不是秒数或炸弹数；无法证明最优时生成失败。 |
+| `min-bombs requires mode clear` | 设置 `mode: clear`，或为 `preview` 选择其他策略。 |
 | 日历没有贡献 | 机器人会巡逻，不会虚构贡献。 |
 | 自定义角色过小 | 使用 `player-icon-trim: auto`；只有想保留图片留白时才使用 `none`。 |
 | README 仍显示旧图片 | 核对文件路径和分支，确认 workflow 已推送图片提交。浏览器或 GitHub 图片代理缓存可能导致延迟，参见 [GitHub 缓存排查文档](https://docs.github.com/zh/authentication/keeping-your-account-and-data-secure/about-anonymized-urls)。 |

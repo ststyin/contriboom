@@ -35,6 +35,8 @@ async function main(): Promise<void> {
   for (const [input, flag, fallback] of [
     ['YEAR', 'year', ''], ['MODE', 'mode', 'clear'], ['SEED', 'seed', '42'], ['THEME', 'theme', DEFAULT_THEME],
     ['PLAYER_ICON_TRIM', 'player-icon-trim', 'auto'],
+    ['PLANNER', 'planner', DEFAULT_CONFIG.planner],
+    ['PLANNER_SEARCH_LIMIT', 'planner-search-limit', String(DEFAULT_CONFIG.plannerSearchLimit)],
     ['BLOCK_DAMAGE', 'block-damage', DEFAULT_CONFIG.blockDamage],
     ['RANGE_MODE', 'range-mode', 'fixed'],
     ['RANGE', 'range', String(DEFAULT_RANGE)], ['MAX_BOMBS', 'max-bombs', '5'],

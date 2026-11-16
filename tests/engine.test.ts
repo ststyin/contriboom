@@ -304,6 +304,112 @@ describe('simulation invariants', () => {
   });
 });
 
+describe('bomb planners', () => {
+  const damage = (replay: Replay) => replay.events.reduce((sum, event) =>
+    sum + (event.type === 'explode' ? event.damaged.length : 0), 0);
+  const steps = (replay: Replay) => replay.events.filter(event => event.type === 'move').length;
+
+  it('defaults to balanced and keeps an explicit balanced replay identical', () => {
+    const arena = createArena(mockContributions(42, 'sparse'));
+    const replay = simulate(arena);
+    expect(replay.config.planner).toBe('balanced');
+    expect(simulate(arena, { planner: 'balanced' })).toEqual(replay);
+  });
+
+  it.each(['fade', 'instant'] as const)('safely clears every fixture with %s damage and never uses more bombs than balanced', blockDamage => {
+    for (const fixture of ['demo', 'full', 'empty', 'sparse'] as const) {
+      const baseline = simulate(createArena(mockContributions(42, fixture)), { blockDamage });
+      const replay = verifyRound(fixture, 42, { planner: 'fewer-bombs', mode: 'clear', blockDamage });
+      expect(replay.stats.bombs).toBeLessThanOrEqual(baseline.stats.bombs);
+      if (replay.stats.bombs === baseline.stats.bombs) expect(steps(replay)).toBeLessThanOrEqual(steps(baseline));
+      expect(replay.start).toEqual(baseline.start);
+      expect(replay.events.filter(event => event.type === 'entry')).toEqual(baseline.events.filter(event => event.type === 'entry'));
+      if (fixture === 'demo' && blockDamage === 'fade') expect(replay.stats.bombs).toBeLessThan(baseline.stats.bombs);
+    }
+  }, 30000);
+
+  it('honors preview budgets and prioritizes damage, then cleared blocks', () => {
+    for (const blockDamage of ['fade', 'instant'] as const) for (const maxBombs of [0, 1, 5, 20]) {
+      const options = { mode: 'preview' as const, seed: 71, blockDamage, maxBombs };
+      const arena = createArena(mockContributions(71));
+      const baseline = simulate(arena, options);
+      const replay = verifyRound('demo', 71, { ...options, planner: 'fewer-bombs' });
+      expect(damage(replay)).toBeGreaterThanOrEqual(damage(baseline));
+      if (damage(replay) === damage(baseline)) expect(replay.stats.destroyed).toBeGreaterThanOrEqual(baseline.stats.destroyed);
+    }
+  }, 30000);
+
+  it('handles changed blast ranges, dense entry and a single-column calendar', () => {
+    for (const explosionRange of [1, 10]) {
+      verifyRound('full', 3, { planner: 'fewer-bombs', explosionRange, maxBombs: 5 });
+      verifyRound('sparse', 3, { planner: 'fewer-bombs', mode: 'clear', explosionRange });
+    }
+    verifyRound('full', 42, { planner: 'fewer-bombs', mode: 'clear' }, mockContributions(42, 'full').slice(0, 7));
+    expect(() => simulate(createArena(mockContributions()), { planner: 'fewer-bombs', fuse: 0.1 })).toThrow(/Cannot safely clear/);
+  }, 30000);
+
+  it('generates identical optimized replays and SVGs from identical inputs', () => {
+    const arena = createArena(mockContributions(71, 'sparse'));
+    const first = simulate(arena, { planner: 'fewer-bombs' });
+    const second = simulate(arena, { planner: 'fewer-bombs' });
+    expect(first).toEqual(second);
+    expect(renderSvg(first)).toBe(renderSvg(second));
+  });
+
+  it.each(['fade', 'instant'] as const)('fast-clear safely completes every fixture with %s damage without increasing clearing time', blockDamage => {
+    for (const fixture of ['demo', 'full', 'empty', 'sparse'] as const) {
+      const baseline = simulate(createArena(mockContributions(42, fixture)), { blockDamage });
+      const replay = verifyRound(fixture, 42, { planner: 'fast-clear', mode: 'clear', blockDamage });
+      expect(replay.resultTime).toBeLessThanOrEqual(baseline.resultTime + 1e-8);
+      expect(replay.start).toEqual(baseline.start);
+      if (fixture === 'demo' && blockDamage === 'fade') expect(replay.resultTime).toBeLessThan(baseline.resultTime);
+    }
+  }, 30000);
+
+  it('fast-clear preserves preview effectiveness and obeys custom movement and fuse settings', () => {
+    const arena = createArena(mockContributions(71, 'sparse'));
+    for (const maxBombs of [0, 1, 5, 20]) {
+      const options = { mode: 'preview' as const, seed: 71, maxBombs, stepDuration: 0.2, fuse: 2, explosionRange: 2 };
+      const baseline = simulate(arena, options);
+      const replay = verifyRound('sparse', 71, { ...options, planner: 'fast-clear' });
+      expect(damage(replay)).toBeGreaterThanOrEqual(damage(baseline));
+      if (damage(replay) === damage(baseline)) {
+        expect(replay.stats.destroyed).toBeGreaterThanOrEqual(baseline.stats.destroyed);
+        if (replay.stats.destroyed === baseline.stats.destroyed) expect(replay.resultTime).toBeLessThanOrEqual(baseline.resultTime + 1e-8);
+      }
+      expect(simulate(arena, { ...options, planner: 'fast-clear' })).toEqual(replay);
+    }
+  });
+
+  it('min-bombs safely replays exact plans with repeated damage and automatic entry', () => {
+    const data = mockContributions(42, 'empty').slice(0, 56);
+    for (const y of [1, 3]) data[7 + y] = { ...data[7 + y]!, count: 12, level: 4 };
+    for (const blockDamage of ['fade', 'instant'] as const) {
+      const replay = verifyRound('demo', 42, { planner: 'min-bombs', mode: 'clear', blockDamage }, data);
+      expect(replay.stats.bombs).toBe(blockDamage === 'fade' ? 4 : 1);
+    }
+    const full = mockContributions(42, 'full').slice(0, 14).map(day => ({ ...day, count: 3, level: 1 as const }));
+    verifyRound('full', 42, { planner: 'min-bombs', mode: 'clear' }, full);
+    verifyRound('full', 42, { planner: 'min-bombs', mode: 'clear' }, full.slice(0, 7));
+    verifyRound('empty', 42, { planner: 'min-bombs', mode: 'clear', plannerSearchLimit: 1 });
+  }, 30000);
+
+  it.each(['balanced', 'fewer-bombs', 'fast-clear', 'min-bombs'] as const)('%s enforces the strict escape deadline', planner => {
+    const data = mockContributions(42, 'empty').slice(0, 56);
+    data[8] = { ...data[8]!, count: 3, level: 1 };
+    const options = { planner, mode: 'clear' as const, stepDuration: 0.25, safetyMargin: 0.5, fuse: 1 };
+    expect(() => simulate(createArena(data, 8), options)).toThrow(/Cannot safely clear/);
+    const replay = verifyRound('demo', 42, { ...options, fuse: 1.01 }, data);
+    expect(replay.stats.bombs).toBe(1);
+  });
+
+  it('rejects unsupported planners instead of silently using balanced', () => {
+    expect(() => simulate(createArena(mockContributions()), {
+      planner: 'unknown' as GameConfig['planner'],
+    })).toThrow(/Unknown planner/);
+  });
+});
+
 describe('input validation', () => {
   it('rejects inconsistent days, duplicate dates and wrong calendar dimensions', () => {
     const data = mockContributions();

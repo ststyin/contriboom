@@ -3,11 +3,12 @@ import { parseArgs } from 'node:util';
 import path from 'node:path';
 import { createArena } from './engine/map.ts';
 import { DEFAULT_CONFIG, simulate } from './engine/simulator.ts';
+import { PLANNERS, validatePlannerOptions } from './engine/planner.ts';
 import { DEFAULT_RANGE, resolveExplosionRange, validateRangeOptions } from './engine/range.ts';
 import type { RangeMode } from './engine/range.ts';
 import { mockContributions } from './fixtures/contributions.ts';
 import type { Fixture } from './fixtures/contributions.ts';
-import type { BlockDamage, Contribution } from './engine/types.ts';
+import type { BlockDamage, Contribution, Planner } from './engine/types.ts';
 import { renderSvg } from './renderer/svg.ts';
 import { loadPlayerIcon } from './renderer/player-icon.ts';
 import type { PlayerIconTrim } from './renderer/player-icon.ts';
@@ -31,6 +32,8 @@ async function main(): Promise<void> {
     'player-icon': { type: 'string' },
     'player-icon-trim': { type: 'string', default: 'auto' },
     mode: { type: 'string', default: 'clear' },
+    planner: { type: 'string', default: DEFAULT_CONFIG.planner },
+    'planner-search-limit': { type: 'string', default: String(DEFAULT_CONFIG.plannerSearchLimit) },
     'max-bombs': { type: 'string', default: '5' },
     range: { type: 'string', default: String(DEFAULT_RANGE) },
     'range-mode': { type: 'string', default: 'fixed' },
@@ -46,6 +49,8 @@ async function main(): Promise<void> {
       '                    [--theme <name>] [--player-icon path/to/image.png]\n' +
       '                    [--player-icon-trim auto|none]\n' +
       `                    [--mode clear|preview] [--range ${DEFAULT_RANGE}]\n` +
+      `                    [--planner ${PLANNERS.join('|')}]\n` +
+      '                    [--planner-search-limit 10000] (min-bombs only)\n' +
       '                    [--range-mode fixed|previous-day|previous-week|previous-month]\n' +
       '                    [--block-damage instant|fade]\n' +
       '                    [--max-bombs 5] (preview only)\n\n' +
@@ -56,12 +61,16 @@ async function main(): Promise<void> {
       'Icon margins: auto trims transparent or near-white borders; none preserves the full canvas.\n' +
       `Explosion range: range (1–10, default ${DEFAULT_RANGE}) is the fixed value or the cap for adaptive activity (7/30-day averages, rounded up).\n` +
       `Block damage: ${DEFAULT_CONFIG.blockDamage} by default; instant destroys blocks on one hit.\n` +
+      'Planner: balanced (default); fewer-bombs reduces bombs; fast-clear reduces simulated clearing time.\n' +
+      'min-bombs: exact bomb count for mode clear and the fixed spawn/entry; fails if the search limit prevents a proof.\n' +
+      'planner-search-limit: positive safe integer, counting admitted search nodes (including the initial node), not bombs or seconds.\n' +
       'JSON input: complete chronological weeks of { date, count, level } days (up to 54 weeks).\n' +
       'Local JSON and fixtures work offline without a token.');
     return;
   }
   if (!Object.hasOwn(THEMES, values.theme!)) throw new Error(`Unknown theme. Choose ${Object.keys(THEMES).join(', ')}.`);
   if (!['auto', 'none'].includes(values['player-icon-trim']!)) throw new Error('Unknown player-icon-trim. Choose auto or none.');
+  validatePlannerOptions(values.planner!, values.mode!, Number(values['planner-search-limit']));
   if (!['instant', 'fade'].includes(values['block-damage']!)) throw new Error('Unknown block-damage. Choose instant or fade.');
   const rangeOptions = { mode: values['range-mode'] as RangeMode, range: Number(values.range) };
   validateRangeOptions(rangeOptions);
@@ -98,7 +107,8 @@ async function main(): Promise<void> {
   const arena = createArena(data, data.length / 7);
   const rangeCalculation = resolveExplosionRange(data, { ...rangeOptions, referenceDate });
   const replay = simulate(arena, {
-    seed, mode: values.mode as 'clear' | 'preview', maxBombs: Number(values['max-bombs']),
+    seed, mode: values.mode as 'clear' | 'preview', planner: values.planner as Planner, maxBombs: Number(values['max-bombs']),
+    plannerSearchLimit: Number(values['planner-search-limit']),
     explosionRange: rangeCalculation.range,
     blockDamage: values['block-damage'] as BlockDamage,
   });
