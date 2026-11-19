@@ -116,6 +116,37 @@ Configure the Action inside the generation step's `with:` block. Inputs that you
 
 `max-bombs` is optional in `preview` mode and defaults to 5. It is an upper limit: fewer bombs may be placed if the calendar is cleared or no safe placement is available. It does not cap a `clear` round. Loop duration is calculated automatically from movement, bombs, and the rebuild sequence; there is no time limit. A full clear can take several minutes on a dense calendar.
 
+### Bomb planning
+
+| Input | Default | Accepted values / behavior |
+| --- | --- | --- |
+| `planner` | `balanced` | `balanced`, `fewer-bombs`, `fast-clear`, or `min-bombs`. See the goals below. |
+| `planner-search-limit` | `'10000'` | Positive safe integer. State budget for `min-bombs`, including its initial state. Other planners do not use this budget. |
+
+| Planner | Goal and guarantees |
+| --- | --- |
+| `balanced` | Original greedy scoring, balancing hits, approach distance and escape distance. |
+| `fewer-bombs` | Bounded lookahead to reduce bombs. Compares the complete plan with `balanced`, choosing fewer bombs, then fewer walking steps. Does not guarantee the global minimum. |
+| `fast-clear` | Bounded lookahead to reduce simulated clearing time. Compares complete plans with `balanced` and keeps the faster one, potentially using more bombs than `fewer-bombs`. Does not guarantee the shortest possible time. |
+| `min-bombs` | Exact minimum bomb count for the fixed spawn and entry, under the existing movement, blast, damage and serial bomb rules. Requires `mode: clear`. Fails when the state budget prevents proving optimality. |
+
+All planners use the same movement, explosion, safe escape, spawn and automatic entry rules. The minimum-bomb search starts after spawn and entry have been fixed; blocks removed by entry do not use bombs. It does not optimize alternative spawns or entry clearings, or guarantee the shortest walking route among equally small bomb counts.
+
+`min-bombs` is intended for small inputs. Even sparse calendars can exceed the search budget; for a typical full-year calendar, use `fewer-bombs` unless you need an optimality proof. No unproven result is silently returned as `min-bombs`.
+
+`planner-search-limit` counts nodes admitted to the search after pruning, including the initial state. Admitting the same remaining-durability layout again with fewer bombs counts again. It does not limit bomb count, computation seconds or animation duration. A larger value allows more search and can increase time and memory use; it does not ensure that optimality can be proved.
+
+In `preview` mode, `fewer-bombs` and `fast-clear` prioritize hits within the bomb budget, then blocks cleared; with `fade`, each hit removes one durability level. At equal effectiveness, `fast-clear` prefers shorter simulated time. Time includes approach movement, fuse and flame waits; escape movement occurs during the fuse. Planner computation time is separate from animation duration.
+
+```yaml
+mode: clear
+planner: fewer-bombs
+```
+
+For local generation, use `npm run generate -- --fixture demo --planner fast-clear`. For exact search on a small input, use `npm run generate -- --input small-calendar.json --planner min-bombs --planner-search-limit 20000`. The selected planner and budget are recorded in `replay.json`. Omit `planner` to keep the original `balanced` behavior.
+
+For GitHub Actions, use a branch, commit or release whose `action.yml` includes these inputs. Adding inputs to `with:` does not upgrade the revision pinned in `uses:`; when testing a PR, point `uses:` at that PR's branch or commit.
+
 ### Explosion rules
 
 | Input | Default | Accepted values / behavior |
@@ -351,6 +382,8 @@ The input calendar stays the same in this comparison. When using a built-in CLI 
 | Missing token, access denied, or account not found | Check `username` and token access. GitHub fetch failures are reported; they are not replaced by simulated contributions. |
 | Rate limit or network timeout | Retry after the reported limit or connection issue is resolved. The CLI can reuse a valid local cache. |
 | Cannot safely clear the calendar | Full calendars get an automatic entry area. A safe path away from every bomb is still required; use `mode: preview` if custom simulation settings prevent a complete clear. |
+| `min-bombs search limit ... reached before proving` | Increase `planner-search-limit` or choose `fewer-bombs`. The limit counts admitted search nodes, not seconds or bombs. Generation fails rather than publishing an unproven result. |
+| `min-bombs requires mode clear` | Set `mode: clear`, or choose another planner for `preview`. |
 | Empty contribution calendar | The robot patrols without inventing contributions. |
 | Custom character is too small | Use `player-icon-trim: auto`; use `none` only when you want to retain image padding. |
 | README still shows an older image | Check the exact file path and branch, and confirm the workflow pushed the image commit. Browser or GitHub image-proxy caches can delay updates; see [GitHub's cache troubleshooting](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/about-anonymized-urls). |

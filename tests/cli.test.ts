@@ -5,6 +5,7 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
+import { mockContributions } from '../src/fixtures/contributions.ts';
 
 const execute = promisify(execFile);
 const root = fileURLToPath(new URL('../', import.meta.url));
@@ -23,6 +24,56 @@ afterEach(async () => {
 });
 
 describe('generation CLI', () => {
+  it('supports balanced and fewer-bombs, records the choice and rejects unknown planners before reading GitHub', async () => {
+    const output = await directory();
+    let balancedBombs = 0;
+    for (const planner of ['balanced', 'fewer-bombs']) {
+      await run(['--fixture', 'sparse', '--planner', planner, '--output', output]);
+      const replay = JSON.parse(await readFile(path.join(output, 'replay.json'), 'utf8'));
+      expect(replay.config.planner).toBe(planner);
+      expect(replay.stats.remaining).toBe(0);
+      if (planner === 'balanced') balancedBombs = replay.stats.bombs;
+      else expect(replay.stats.bombs).toBeLessThanOrEqual(balancedBombs);
+      expect(await readFile(path.join(output, 'game.svg'), 'utf8')).toContain('<animate');
+    }
+    expect((await run(['--help'])).stdout).toContain('--planner balanced|fewer-bombs|fast-clear|min-bombs');
+    const emptyOutput = await directory();
+    await expect(run(['--username', 'octocat', '--planner', 'unknown', '--output', emptyOutput])).rejects.toMatchObject({
+      stderr: expect.stringContaining('Unknown planner'),
+    });
+    expect(await readdir(emptyOutput)).toEqual([]);
+  });
+
+  it('supports fast-clear and min-bombs, including the exact search budget', async () => {
+    const source = await directory();
+    const output = await directory();
+    const days = mockContributions(42, 'empty').slice(0, 56);
+    for (const y of [1, 3]) days[7 + y] = { ...days[7 + y]!, count: 3, level: 1 };
+    const input = path.join(source, 'small-calendar.json');
+    await writeFile(input, JSON.stringify(days));
+    for (const planner of ['fast-clear', 'min-bombs']) {
+      await run(['--input', input, '--planner', planner, '--planner-search-limit', '1', '--output', output]);
+      const replay = JSON.parse(await readFile(path.join(output, 'replay.json'), 'utf8'));
+      expect(replay.config).toMatchObject({ planner, plannerSearchLimit: 1 });
+      expect(replay.stats).toMatchObject({ bombs: 1, remaining: 0 });
+    }
+    const emptyOutput = await directory();
+    for (const args of [
+      ['--planner', 'min-bombs', '--mode', 'preview'],
+      ['--planner-search-limit', '0'], ['--planner-search-limit', '1.5'],
+    ]) {
+      await expect(run(['--username', 'octocat', ...args, '--output', emptyOutput])).rejects.toMatchObject({
+        stderr: expect.stringMatching(/requires mode clear|planner-search-limit/),
+      });
+    }
+    const blocked = mockContributions(42, 'empty').slice(0, 21);
+    for (const i of [0, 17, 6]) blocked[i] = { ...blocked[i]!, count: 3, level: 1 };
+    await writeFile(input, JSON.stringify(blocked));
+    await expect(run(['--input', input, '--range', '1', '--planner', 'min-bombs', '--planner-search-limit', '1', '--output', emptyOutput]))
+      .rejects.toMatchObject({ stderr: expect.stringContaining('before proving the minimum') });
+    expect(await readdir(emptyOutput)).toEqual([]);
+  });
+
   it('generates a full calendar with automatic entry in clear and zero-bomb preview modes', async () => {
     const output = await directory();
     for (const mode of ['clear', 'preview']) {
@@ -175,7 +226,7 @@ describe('generation CLI', () => {
     const output = await directory();
     await run(['--fixture', 'sparse', '--output', output]);
     const replay = JSON.parse(await readFile(path.join(output, 'replay.json'), 'utf8'));
-    expect(replay.config).toMatchObject({ explosionRange: 4, blockDamage: 'fade' });
+    expect(replay.config).toMatchObject({ planner: 'balanced', plannerSearchLimit: 10000, explosionRange: 4, blockDamage: 'fade' });
     expect(replay.stats.remaining).toBe(0);
     expect(await readFile(path.join(output, 'game.svg'), 'utf8')).toContain('attributeName="fill"');
     expect(await readFile(path.join(output, 'game-static.svg'), 'utf8')).not.toContain('<animate');

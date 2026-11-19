@@ -21,6 +21,12 @@ inputs:
   mode:
     description: clear requires a safe full clear; preview limits the number of bombs.
     default: clear
+  planner:
+    description: balanced, fewer-bombs, fast-clear, or min-bombs. min-bombs requires clear and proves the minimum bomb count for the fixed spawn and entry, or fails at the search limit.
+    default: balanced
+  planner-search-limit:
+    description: Positive safe integer search-node budget for min-bombs, including the initial node. Not a bomb or time limit. Fails generation if the budget prevents proving optimality.
+    default: '10000'
   theme:
     description: Tile palette for game.svg and game-static.svg (github, light, dark, ocean, sakura, cyberpunk, sunset, nord, mocha, mint, sky, lavender, peach, sand, rose).
     default: github
@@ -80,6 +86,8 @@ runs:
         CONTRIBOOM_INPUT_YEAR: ${{ inputs.year }}
         CONTRIBOOM_INPUT_OUTPUT: ${{ inputs.output-dir }}
         CONTRIBOOM_INPUT_MODE: ${{ inputs.mode }}
+        CONTRIBOOM_INPUT_PLANNER: ${{ inputs.planner }}
+        CONTRIBOOM_INPUT_PLANNER_SEARCH_LIMIT: ${{ inputs.planner-search-limit }}
         CONTRIBOOM_INPUT_THEME: ${{ inputs.theme }}
         CONTRIBOOM_INPUT_PLAYER_ICON: ${{ inputs.player-icon }}
         CONTRIBOOM_INPUT_PLAYER_ICON_TRIM: ${{ inputs.player-icon-trim }}
