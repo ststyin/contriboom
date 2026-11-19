@@ -53,7 +53,7 @@ jobs:
 
       - name: Generate contribution arena
         id: contriboom
-        uses: ststyin/contriboom@v1.0.0
+        uses: ststyin/Contriboom@v1.0.0
         with:
           username: ${{ github.repository_owner }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
